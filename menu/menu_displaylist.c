@@ -4951,6 +4951,12 @@ bool menu_displaylist_ctl(enum menu_displaylist_ctl_state type, void *data)
          menu_displaylist_parse_settings_enum(menu, info,
                MENU_ENUM_LABEL_SLOWMOTION_RATIO,
                PARSE_ONLY_FLOAT, false);
+         menu_displaylist_parse_settings_enum(menu, info,
+            MENU_ENUM_LABEL_LOOKAHEAD_REDUCTION,
+            PARSE_ONLY_BOOL, false);
+         menu_displaylist_parse_settings_enum(menu, info,
+            MENU_ENUM_LABEL_RUN_AHEAD_FRAMES,
+            PARSE_ONLY_UINT, false);
          if (settings->bools.menu_show_advanced_settings)
             menu_displaylist_parse_settings_enum(menu, info,
                   MENU_ENUM_LABEL_MENU_THROTTLE_FRAMERATE,

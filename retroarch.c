@@ -3242,7 +3242,58 @@ int runloop_iterate(unsigned *sleep_ms)
    if ((settings->uints.video_frame_delay > 0) && !input_nonblock_state)
       retro_sleep(settings->uints.video_frame_delay);
 
-   core_run();
+   /* Dwedit lookahead control latency reduction. */
+   if (settings->bools.lookahead_reduction && settings->uints.run_ahead_frames > 0)
+   {
+      //bool videoDriverActive = video_driver_is_active();
+      int totalRunAheadFrames = settings->uints.run_ahead_frames;
+      int runAhead = totalRunAheadFrames;
+
+      retro_ctx_serialize_info_t serial_info;
+      serial_info.data = NULL;
+      serial_info.data_const = NULL;
+      serial_info.size = 0;
+
+      void * stateBuffer = NULL;
+      if (totalRunAheadFrames > 0)
+      {
+         retro_ctx_size_info_t info;
+         core_serialize_size(&info);
+
+         stateBuffer = malloc(info.size);
+         serial_info.size = info.size;
+         serial_info.data_const = stateBuffer;
+         serial_info.data = stateBuffer;
+
+         video_driver_unset_active();
+         audio_driver_suspend();
+         core_run();
+         audio_driver_resume();
+         video_driver_set_active();
+         core_serialize(&serial_info);
+         runAhead--;
+      }
+
+      while (runAhead > 0)
+      {
+         video_driver_unset_active();
+         audio_driver_suspend();
+         core_run();
+         audio_driver_resume();
+         video_driver_set_active();
+         runAhead--;
+      }
+
+      core_run();
+
+      if (totalRunAheadFrames > 0)
+      {
+         core_unserialize(&serial_info);
+         free(stateBuffer);
+      }
+   }
+   else
+      core_run();
 
 #ifdef HAVE_CHEEVOS
    if (runloop_check_cheevos())

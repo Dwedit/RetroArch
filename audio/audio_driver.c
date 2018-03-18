@@ -183,6 +183,8 @@ static void *audio_driver_resampler_data                 = NULL;
 static const audio_driver_t *current_audio               = NULL;
 static void *audio_driver_context_audio_data             = NULL;
 
+static bool audio_suspended                              = false;
+
 enum resampler_quality audio_driver_get_resampler_quality(void)
 {
    settings_t *settings = config_get_ptr();
@@ -559,6 +561,9 @@ void audio_driver_set_nonblocking_state(bool enable)
  **/
 static void audio_driver_flush(const int16_t *data, size_t samples)
 {
+   if (audio_suspended)
+      return;
+
    struct resampler_data src_data;
    bool is_perfcnt_enable                               = false;
    bool is_paused                                       = false;
@@ -1284,6 +1289,30 @@ void audio_driver_unset_own_driver(void)
 bool audio_driver_owns_driver(void)
 {
    return audio_driver_data_own;
+}
+
+static struct retro_audio_callback callback_backup;
+static bool backup_audio_driver_active = false;
+void audio_driver_suspend(void)
+{
+   if (audio_suspended == false)
+   {
+      audio_suspended = true;
+      callback_backup.callback = audio_callback.callback;
+      backup_audio_driver_active = audio_driver_active;
+      callback_backup.callback = NULL;
+      audio_driver_active = false;
+   }
+}
+
+void audio_driver_resume(void)
+{
+   if (audio_suspended == true)
+   {
+      audio_suspended = false;
+      audio_callback.callback = callback_backup.callback;
+      audio_driver_active = backup_audio_driver_active;
+   }
 }
 
 void audio_driver_set_active(void)

@@ -4821,6 +4821,35 @@ static bool setting_append_list(
 
          CONFIG_BOOL(
                list, list_info,
+               &settings->bools.lookahead_reduction,
+               MENU_ENUM_LABEL_LOOKAHEAD_REDUCTION,
+               MENU_ENUM_LABEL_VALUE_LOOKAHEAD_REDUCTION,
+               false,
+               MENU_ENUM_LABEL_VALUE_OFF,
+               MENU_ENUM_LABEL_VALUE_ON,
+               &group_info,
+               &subgroup_info,
+               parent_group,
+               general_write_handler,
+               general_read_handler,
+               SD_FLAG_NONE
+               );
+
+         CONFIG_UINT(
+            list, list_info,
+            &settings->uints.run_ahead_frames,
+            MENU_ENUM_LABEL_RUN_AHEAD_FRAMES,
+            MENU_ENUM_LABEL_VALUE_RUN_AHEAD_FRAMES,
+            1,
+            &group_info,
+            &subgroup_info,
+            parent_group,
+            general_write_handler,
+            general_read_handler);
+         menu_settings_list_current_add_range(list, list_info, 1, 6, 1, true, true);
+
+         CONFIG_BOOL(
+               list, list_info,
                &settings->bools.menu_throttle_framerate,
                MENU_ENUM_LABEL_MENU_THROTTLE_FRAMERATE,
                MENU_ENUM_LABEL_VALUE_MENU_ENUM_THROTTLE_FRAMERATE,

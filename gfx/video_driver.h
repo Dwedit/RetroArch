@@ -949,6 +949,7 @@ bool video_driver_is_video_cache_context(void);
 void video_driver_set_video_cache_context_ack(void);
 bool video_driver_is_video_cache_context_ack(void);
 void video_driver_set_active(void);
+void video_driver_unset_active(void);
 bool video_driver_is_active(void);
 bool video_driver_gpu_record_init(unsigned size);
 void video_driver_gpu_record_deinit(void);

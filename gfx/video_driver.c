@@ -2146,6 +2146,11 @@ void video_driver_set_active(void)
    video_driver_active = true;
 }
 
+void video_driver_unset_active(void)
+{
+   video_driver_active = false;
+}
+
 bool video_driver_is_active(void)
 {
    return video_driver_active;
