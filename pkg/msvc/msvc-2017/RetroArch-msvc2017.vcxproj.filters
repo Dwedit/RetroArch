@@ -18,5 +18,10 @@
     <ClCompile Include="..\..\..\griffin\griffin_glslang.cpp">
       <Filter>griffin</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\RunAhead.cpp" />
+    <ClCompile Include="..\..\..\SecondaryCore.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\LoadContentCpp.hpp" />
   </ItemGroup>
 </Project>

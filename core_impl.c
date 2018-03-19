@@ -275,8 +275,12 @@ bool core_get_memory(retro_ctx_memory_info_t *info)
    return true;
 }
 
+extern void SetLoadContentInfo(const retro_ctx_load_content_info_t *ctx);
+
 bool core_load_game(retro_ctx_load_content_info_t *load_info)
 {
+   SetLoadContentInfo(load_info);
+
    bool contentless = false;
    bool is_inited   = false;
 
