@@ -13,11 +13,20 @@ extern "C"
 {
 #endif
 FILE* fopen_utf8(const char * filename, const char * mode);
+bool unlink_utf8(const char * filename);
+bool mkdir_utf8(const char * filename);
+
 #if __cplusplus
 }
 #endif
 
+
+
+
 #else
 #define fopen_utf8 fopen
+#define unlink_utf8 unlink
+#define mkdir_utf8 mkdir
+
 #endif
 #endif

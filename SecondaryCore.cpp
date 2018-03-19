@@ -242,6 +242,7 @@ public:
 			
 			dylib_close(module);
 			module = NULL;
+			unlink_utf8(libraryPath.c_str());
 			libraryPath = "";
 		}
 		RemoveInputStateHook();
@@ -294,9 +295,7 @@ string CopyCoreToTempFile()
 	string coreBaseName = path_basename(corePath.c_str());
 	string tempPath = GetTempDirectory();
 	string retroarchTempPath = tempPath + path_default_slash() + "retroarch_temp" + path_default_slash();
-#if _WIN32
-	BOOL okay = CreateDirectoryA(retroarchTempPath.c_str(), NULL);
-#endif
+	mkdir_utf8(retroarchTempPath.c_str());
 	
 	//fixme - pick a unique name instead of this
 	string tempDllPath = retroarchTempPath + coreBaseName;

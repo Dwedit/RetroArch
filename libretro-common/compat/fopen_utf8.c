@@ -35,3 +35,24 @@ FILE* fopen_utf8(const char * filename, const char * mode)
 #endif
 }
 #endif
+
+
+#ifdef _WIN32
+
+bool unlink_utf8(const char * filename)
+{
+   wchar_t * filename_w = utf8_to_utf16_string_alloc(filename);
+   bool result = _unlink(filename);
+   free(filename_w);
+   return result;
+}
+
+bool mkdir_utf8(const char * filename)
+{
+   wchar_t * filename_w = utf8_to_utf16_string_alloc(filename);
+   bool result = _mkdir(filename_w);
+   free(filename_w);
+   return result;
+}
+
+#endif
