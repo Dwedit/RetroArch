@@ -223,6 +223,7 @@ typedef struct settings
       bool playlist_entry_rename;
       bool rewind_enable;
       bool lookahead_reduction;
+      bool run_ahead_secondary_instance;
       bool pause_nonactive;
       bool block_sram_overwrite;
       bool savestate_auto_index;

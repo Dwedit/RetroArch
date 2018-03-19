@@ -3245,12 +3245,12 @@ int runloop_iterate(unsigned *sleep_ms)
    /* Dwedit lookahead control latency reduction. */
    if (settings->bools.lookahead_reduction && settings->uints.run_ahead_frames > 0)
    {
-      //bool videoDriverActive = video_driver_is_active();
-      int totalRunAheadFrames = settings->uints.run_ahead_frames;
-      RunAhead(totalRunAheadFrames, true);
+      RunAhead(settings->uints.run_ahead_frames, settings->bools.run_ahead_secondary_instance);
    }
    else
+   {
       core_run();
+   }
 
 #ifdef HAVE_CHEEVOS
    if (runloop_check_cheevos())
