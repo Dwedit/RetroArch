@@ -2,6 +2,7 @@
 #define __FOPEN_UTF8_H
 
 #include <stdio.h>
+#include <stdbool.h>
 
 #ifdef _WIN32
 /* defined to error rather than fopen_utf8, to make it clear to everyone reading the code that not worrying about utf16 is fine */
@@ -25,8 +26,8 @@ bool mkdir_utf8(const char * filename);
 
 #else
 #define fopen_utf8 fopen
+#include <unistd.h>
 #define unlink_utf8 unlink
 #define mkdir_utf8 mkdir
-
 #endif
 #endif

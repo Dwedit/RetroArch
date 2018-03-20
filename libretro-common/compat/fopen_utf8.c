@@ -1,6 +1,8 @@
 #include <compat/fopen_utf8.h>
 #include <encodings/utf.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include <stdio.h>
 
 #if defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0500 || defined(_XBOX)
 #ifndef LEGACY_WIN32
@@ -21,6 +23,7 @@ FILE* fopen_utf8(const char * filename, const char * mode)
 
    if (!filename_local)
       return NULL;
+
    ret = fopen(filename_local, mode);
    if (filename_local)
       free(filename_local);
@@ -37,12 +40,16 @@ FILE* fopen_utf8(const char * filename, const char * mode)
 #endif
 
 
-#ifdef _WIN32
+#if _WIN32
+
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 
 bool unlink_utf8(const char * filename)
 {
    wchar_t * filename_w = utf8_to_utf16_string_alloc(filename);
-   bool result = _unlink(filename);
+   bool result = DeleteFileW(filename_w);
    free(filename_w);
    return result;
 }
@@ -50,7 +57,7 @@ bool unlink_utf8(const char * filename)
 bool mkdir_utf8(const char * filename)
 {
    wchar_t * filename_w = utf8_to_utf16_string_alloc(filename);
-   bool result = _mkdir(filename_w);
+   bool result = CreateDirectoryW(filename_w, NULL);
    free(filename_w);
    return result;
 }
