@@ -381,8 +381,6 @@
     </ClCompile>
     <ClCompile Include="..\..\..\griffin\griffin_cpp.cpp" />
     <ClCompile Include="..\..\..\griffin\griffin_glslang.cpp" />
-    <ClCompile Include="..\..\..\RunAhead.cpp" />
-    <ClCompile Include="..\..\..\SecondaryCore.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\LoadContentCpp.hpp" />
