@@ -15,6 +15,7 @@ using std::map;
 using std::tuple;
 
 #include "compat/fopen_utf8.h"
+#include "compat/unlink_utf8.h"
 #include "dynamic/dylib.h"
 #include "dynamic.h"
 #include "core.h"
@@ -295,7 +296,7 @@ string CopyCoreToTempFile()
 	string coreBaseName = path_basename(corePath.c_str());
 	string tempPath = GetTempDirectory();
 	string retroarchTempPath = tempPath + path_default_slash() + "retroarch_temp" + path_default_slash();
-	mkdir_utf8(retroarchTempPath.c_str());
+	path_mkdir(retroarchTempPath.c_str());
 	
 	//fixme - pick a unique name instead of this
 	string tempDllPath = retroarchTempPath + coreBaseName;

@@ -38,28 +38,3 @@ FILE* fopen_utf8(const char * filename, const char * mode)
 #endif
 }
 #endif
-
-
-#if _WIN32
-
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
-bool unlink_utf8(const char * filename)
-{
-   wchar_t * filename_w = utf8_to_utf16_string_alloc(filename);
-   bool result = DeleteFileW(filename_w);
-   free(filename_w);
-   return result;
-}
-
-bool mkdir_utf8(const char * filename)
-{
-   wchar_t * filename_w = utf8_to_utf16_string_alloc(filename);
-   bool result = CreateDirectoryW(filename_w, NULL);
-   free(filename_w);
-   return result;
-}
-
-#endif

@@ -19,7 +19,4 @@
       <Filter>griffin</Filter>
     </ClCompile>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\..\LoadContentCpp.hpp" />
-  </ItemGroup>
 </Project>
