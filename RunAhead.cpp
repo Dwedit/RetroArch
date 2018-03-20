@@ -121,6 +121,7 @@ public:
 
 			if (inputDirty)
 			{
+				InputIsDirty = false;
 				SaveState();
 				LoadStateSecondary();
 				for (int frameCount = 0; frameCount < runAheadCount - 1; frameCount++)
