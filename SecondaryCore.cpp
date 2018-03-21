@@ -173,7 +173,7 @@ public:
 			libraryPath = "";
 			return false;
 		}
-		if (load_symbols_custom(lastCoreType, &core, libraryPath.c_str(), &module))
+		if (init_libretro_sym_custom(lastCoreType, &core, libraryPath.c_str(), &module))
 		{
 			AddInputStateHook();
 
