@@ -10,8 +10,8 @@ using std::string;
 
 typedef unsigned char byte;
 
-void RunFrameSecondary();
-void DeserializeSecondary(void *buffer, int size);
+bool RunFrameSecondary();
+bool DeserializeSecondary(void *buffer, int size);
 void DestroySecondary();
 
 extern "C"
@@ -20,13 +20,17 @@ extern "C"
 	extern struct retro_core_t current_core;
 }
 
+#if HAVE_DYNAMIC
 extern bool InputIsDirty;
+#endif
 
 function_t originalRetroDeinit = NULL;
 function_t originalRetroUnload = NULL;
+function_t originalRetroReset = NULL;
 
 void DeinitHook();
 void UnloadHook();
+void ResetHook();
 
 void AddDestroyHook()
 {
@@ -50,6 +54,23 @@ void RemoveDestroyHook()
 	}
 }
 
+void AddResetHook()
+{
+	if (originalRetroReset == NULL)
+	{
+		originalRetroReset = current_core.retro_reset;
+		current_core.retro_reset = ResetHook;
+	}
+}
+
+void RemoveResetHook()
+{
+	if (originalRetroReset != NULL)
+	{
+		current_core.retro_reset = originalRetroReset;
+		originalRetroReset = NULL;
+	}
+}
 
 class RunAheadContext
 {
@@ -57,19 +78,27 @@ class RunAheadContext
 	vector<byte> saveStateData;
 	retro_ctx_serialize_info_t serial_info;
 	bool videoDriverIsActive;
-	bool forceInputDirty = false;
+	bool runAheadAvailable;
+	bool secondaryCoreAvailable;
+
 public:
+	bool forceInputDirty;
 	RunAheadContext()
 	{
 		saveStateSize = 0xFFFFFFFF;
 		serial_info.data = NULL;
 		serial_info.data_const = NULL;
 		serial_info.size = 0;
+		videoDriverIsActive = true;
+		runAheadAvailable = true;
+		secondaryCoreAvailable = true;
+		forceInputDirty = true;
 	}
 
 	void RunAhead(int runAheadCount, bool useSecondary)
 	{
-		if (runAheadCount <= 0)
+		bool okay;
+		if (runAheadCount <= 0 || !runAheadAvailable)
 		{
 			core_run();
 			return;
@@ -77,13 +106,18 @@ public:
 
 		if (saveStateSize == 0xFFFFFFFF)
 		{
-			Create();
+			if (!Create())
+			{
+				//runloop_msg_queue_push("RunAhead has been disabled because the core does not support savestates", 1, 180, true);
+				core_run();
+				return;
+			}
 		}
 
 		int runAhead = runAheadCount;
 		int frameNumber = 0;
 		
-		if (!useSecondary)
+		if (!useSecondary || !HAVE_DYNAMIC || !secondaryCoreAvailable)
 		{
 			for (frameNumber = 0; frameNumber <= runAheadCount; frameNumber++)
 			{
@@ -102,16 +136,25 @@ public:
 				}
 				if (frameNumber == 0)
 				{
-					SaveState();
+					if (!SaveState())
+					{
+						//runloop_msg_queue_push("RunAhead has been disabled due to save state failure", 1, 180, true);
+						return;
+					}
 				}
 				if (lastFrame)
 				{
-					LoadState();
+					if (!LoadState())
+					{
+						//runloop_msg_queue_push("RunAhead has been disabled due to load state failure", 1, 180, true);
+						return;
+					}
 				}
 			}
 		}
 		else
 		{
+#if HAVE_DYNAMIC
 			//run main core with video suspended
 			SuspendVideo();
 			core_run();
@@ -122,21 +165,57 @@ public:
 			if (inputDirty)
 			{
 				InputIsDirty = false;
-				SaveState();
-				LoadStateSecondary();
+				if (!SaveState())
+				{
+					return;
+				}
+				if (!LoadStateSecondary())
+				{
+					//runloop_msg_queue_push("Could not create a secondary core. RunAhead will only use the main core now.", 1, 180, true);
+					return;
+				}
 				for (int frameCount = 0; frameCount < runAheadCount - 1; frameCount++)
 				{
 					SuspendVideo();
-					RunFrameSecondary();
+					SuspendAudio();
+					okay = RunSecondary();
+					ResumeAudio();
 					ResumeVideo();
+					if (!okay)
+					{
+						//runloop_msg_queue_push("Could not create a secondary core. RunAhead will only use the main core now.", 1, 180, true);
+						return;
+					}
 				}
 			}
-			RunFrameSecondary();
+			SuspendAudio();
+			okay = RunSecondary();
+			ResumeAudio();
+			if (!okay)
+			{
+				//runloop_msg_queue_push("Could not create a secondary core. RunAhead will only use the main core now.", 1, 180, true);
+				return;
+			}
+#endif
 		}
 		forceInputDirty = false;
 	}
 
-	void Create()
+	void RunAheadError()
+	{
+		runAheadAvailable = false;
+
+		RemoveResetHook();
+		RemoveDestroyHook();
+
+		saveStateSize = 0;
+		saveStateData.clear();
+		serial_info.data = NULL;
+		serial_info.data_const = NULL;
+		serial_info.size = 0;
+	}
+
+	bool Create()
 	{
 		//get savestate size and allocate buffer
 		retro_ctx_size_info_t info;
@@ -145,28 +224,76 @@ public:
 		saveStateSize = info.size;
 		saveStateData.clear();
 		saveStateData.resize(saveStateSize);
-		
-		serial_info.data = &saveStateData[0];
-		serial_info.data_const = &saveStateData[0];
-		serial_info.size = saveStateData.size();
+
+		//prevent assert errors when accessing address of element 0 for a 0 size vector
+		if (saveStateData.size() > 0)
+		{
+			serial_info.data = &saveStateData[0];
+			serial_info.data_const = &saveStateData[0];
+			serial_info.size = saveStateData.size();
+		}
+		else
+		{
+			serial_info.data = NULL;
+			serial_info.data_const = NULL;
+			serial_info.size = 0;
+		}
+
 
 		videoDriverIsActive = video_driver_is_active();
 
+		if (saveStateSize == 0)
+		{
+			RunAheadError();
+			return false;
+		}
+
+		AddResetHook();
 		AddDestroyHook();
 
 		forceInputDirty = true;
+		return true;
 	}
-	void SaveState()
+	bool SaveState()
 	{
-		core_serialize(&serial_info);
+		bool okay = core_serialize(&serial_info);
+		if (!okay)
+		{
+			RunAheadError();
+		}
+		return okay;
 	}
-	void LoadState()
+	bool LoadState()
 	{
-		core_unserialize(&serial_info);
+		bool okay = core_unserialize(&serial_info);
+		if (!okay)
+		{
+			RunAheadError();
+		}
+		return okay;
 	}
-	void LoadStateSecondary()
+	bool LoadStateSecondary()
 	{
-		DeserializeSecondary(&saveStateData[0], (int)saveStateData.size());
+		bool okay = true;
+		if (saveStateData.size() == 0)
+		{
+			okay = false;
+		}
+		okay = okay && DeserializeSecondary(&saveStateData[0], (int)saveStateData.size());
+		if (!okay)
+		{
+			secondaryCoreAvailable = false;
+		}
+		return okay;
+	}
+	bool RunSecondary()
+	{
+		bool okay = RunFrameSecondary();
+		if (!okay)
+		{
+			secondaryCoreAvailable = false;
+		}
+		return okay;
 	}
 	void SuspendAudio()
 	{
@@ -198,7 +325,10 @@ public:
 		saveStateData.clear();
 		serial_info.data = NULL;
 		serial_info.data_const = NULL;
-		serial_info.size = NULL;
+		serial_info.size = 0;
+
+		runAheadAvailable = true;
+		secondaryCoreAvailable = true;
 	}
 };
 
@@ -210,20 +340,41 @@ extern "C"
 	{
 		runAheadContext.RunAhead(runAheadCount, useSecondary);
 	}
+	void RunAhead_Destroy()
+	{
+		runAheadContext.Destroy();
+	}
 }
 
 void DeinitHook()
 {
+	RemoveResetHook();
 	RemoveDestroyHook();
 	runAheadContext.Destroy();
 	DestroySecondary();
-	current_core.retro_deinit();
+	if (current_core.retro_deinit)
+	{
+		current_core.retro_deinit();
+	}
 }
 
 void UnloadHook()
 {
+	RemoveResetHook();
 	RemoveDestroyHook();
 	runAheadContext.Destroy();
 	DestroySecondary();
-	current_core.retro_unload_game();
+	if (current_core.retro_unload_game)
+	{
+		current_core.retro_unload_game();
+	}
+}
+
+void ResetHook()
+{
+	runAheadContext.forceInputDirty = true;
+	if (originalRetroReset)
+	{
+		originalRetroReset();
+	}
 }

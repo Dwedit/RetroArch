@@ -1,3 +1,5 @@
+#if HAVE_DYNAMIC
+
 #include <vector>
 #include <string>
 #include <string.h>
@@ -30,7 +32,7 @@ typedef unsigned char byte;
 RetroCtxLoadContentInfo loadContentInfo;
 enum rarch_core_type lastCoreType;
 
-string CopyCoreToTempFile();
+string CopyCoreToTempFile(bool &okay);
 
 extern "C"
 {
@@ -109,6 +111,7 @@ void RemoveInputStateHook()
 		retro_ctx.state_cb = originalInputStateCallback;
 		current_core.retro_set_input_state(retro_ctx.state_cb);
 		originalInputStateCallback = NULL;
+		inputStateMap.clear();
 	}
 }
 
@@ -161,10 +164,16 @@ public:
 	retro_input_state_t state_cb;
 	retro_input_poll_t poll_cb;
 
-	void Create()
+	bool Create()
 	{
-		libraryPath = CopyCoreToTempFile();
-		if (init_libretro_sym_custom(lastCoreType, &core, libraryPath.c_str(), &module))
+		bool okay;
+		libraryPath = CopyCoreToTempFile(okay);
+		if (!okay)
+		{
+			libraryPath = "";
+			return false;
+		}
+		if (load_symbols_custom(lastCoreType, &core, libraryPath.c_str(), &module))
 		{
 			AddInputStateHook();
 
@@ -190,28 +199,50 @@ public:
 			
 			bool contentless, is_inited;
 			::content_get_status(&contentless, &is_inited);
-
+			core.inited = is_inited;
 			//run load game
 			if (loadContentInfo.special)
 			{
 				core.game_loaded = core.retro_load_game_special(loadContentInfo.special->id, loadContentInfo.info, loadContentInfo.content->size);
+				if (!core.game_loaded)
+				{
+					Destroy();
+					return false;
+				}
 			}
-			else if (loadContentInfo.Content.Elems.size () > 0 && !loadContentInfo.Content.Elems[0].Data.empty())
+			else if (loadContentInfo.Content.Elems.size() > 0 && !loadContentInfo.Content.Elems[0].Data.empty())
 			{
 				core.game_loaded = core.retro_load_game(&loadContentInfo.Info);
+				if (!core.game_loaded)
+				{
+					Destroy();
+					return false;
+				}
 			}
 			else if (contentless)
 			{
 				core.game_loaded = core.retro_load_game(NULL);
+				if (!core.game_loaded)
+				{
+					Destroy();
+					return false;
+				}
 			}
 			else
 			{
 				core.game_loaded = false;
 			}
-
-			core.inited = true;
+			if (!core.inited)
+			{
+				Destroy();
+				return false;
+			}
 		}
-
+		else
+		{
+			return false;
+		}
+		return true;
 	}
 
 	void RunFrame()
@@ -266,41 +297,126 @@ string GetTempDirectory()
 	return tempPath;
 }
 
-vector<byte> ReadFileData(string fileName)
+vector<byte> ReadFileData(string fileName, bool &okay)
 {
+	okay = true;
 	vector<byte> data;
 	FILE *f = fopen_utf8(fileName.c_str(), "rb");
-	if (f == NULL) return data;
+	if (f == NULL)
+	{
+		okay = false;
+		return data;
+	}
+#if _WIN32
+	int64_t fileSizeLong;
 	fseek(f, 0, SEEK_END);
-	long fileSize = ftell(f);
+	fileSizeLong = _ftelli64(f);
 	fseek(f, 0, SEEK_SET);
+#else
+	off64_t fileSizeLong;
+	fseek(f, 0, SEEK_END);
+	fileSizeLong = ftello64(f);
+	fseek(f, 0, SEEK_SET);
+#endif
+	//256MB file size limit for DLL files
+	if (fileSizeLong < 0 || fileSizeLong > 256 * 1024 * 1024)
+	{
+		okay = false;
+		return data;
+	}
+	int fileSize = (int)fileSizeLong;
 	data.resize(fileSize);
-	fread(&data[0], 1, data.size(), f);
+	size_t bytesRead = fread(&data[0], 1, data.size(), f);
 	fclose(f);
+	if ((int)bytesRead != (int)fileSize)
+	{
+		okay = false;
+	}
 	return data;
 }
 
 bool WriteFileData(string fileName, const vector<byte> &data)
 {
+	bool okay = true;
 	FILE *f = fopen_utf8(fileName.c_str(), "wb");
 	if (f == NULL) return false;
-	fwrite(&data[0], 1, data.size(), f);
+	size_t bytesWritten = fwrite(&data[0], 1, data.size(), f);
+	if (bytesWritten != data.size())
+	{
+		okay = false;
+	}
 	fclose(f);
-	return true;
+	return okay;
 }
 
-string CopyCoreToTempFile()
+bool WriteFileWithRandomName(string &tempDllPath, const string &retroarchTempPath, const string &ext, const vector<byte> &data)
 {
-	//proof of concept, no error checking yet
+	bool okay = true;
+	//try another name
+	int maxAttempts = 30;
+	string prefix = "tmp";
+	char numberBuf[32];
+
+	time_t timeValue = time(NULL);
+	unsigned int numberValue = (unsigned int)timeValue;
+
+	//try up to 30 'random' filenames before giving up
+	for (int i = 0; i < 30; i++)
+	{
+		numberValue = numberValue * 214013 + 2531011;
+		int number = (numberValue >> 16) % 100000;
+		sprintf(numberBuf, "%05d", number);
+		tempDllPath = retroarchTempPath + prefix + numberBuf + ext;
+		okay = WriteFileData(tempDllPath, data);
+		if (okay)
+		{
+			break;
+		}
+	}
+	return okay;
+}
+
+string CopyCoreToTempFile(bool &okay)
+{
 	string corePath = path_get(RARCH_PATH_CORE);
 	string coreBaseName = path_basename(corePath.c_str());
+	if (coreBaseName.length() == 0)
+	{
+		okay = false;
+		return "";
+	}
 	string tempPath = GetTempDirectory();
+	if (tempPath.length() == 0)
+	{
+		okay = false;
+		return "";
+	}
 	string retroarchTempPath = tempPath + path_default_slash() + "retroarch_temp" + path_default_slash();
-	path_mkdir(retroarchTempPath.c_str());
-	
-	//fixme - pick a unique name instead of this
+	bool dirCreated = path_mkdir(retroarchTempPath.c_str());
+
+	if (!dirCreated)
+	{
+		okay = false;
+		return "";
+	}
+
+	vector<byte> dllFileData = ReadFileData(corePath, okay);
+	if (!okay)
+	{
+		return "";
+	}
 	string tempDllPath = retroarchTempPath + coreBaseName;
-	WriteFileData(tempDllPath, ReadFileData(corePath));
+	okay = WriteFileData(tempDllPath, dllFileData);
+	if (!okay)
+	{
+		string ext = path_get_extension(coreBaseName.c_str());
+		if (ext.length() > 0) ext = "." + ext;
+		okay = WriteFileWithRandomName(tempDllPath, retroarchTempPath, ext, dllFileData);
+		if (!okay)
+		{
+			return "";
+		}
+	}
 	return tempDllPath;
 }
 
@@ -322,28 +438,66 @@ extern "C"
 
 SecondaryCoreContext secondaryCore;
 
-void RunFrameSecondary()
+bool RunFrameSecondary()
 {
 	if (secondaryCore.module == NULL)
 	{
-		secondaryCore.Create();
+		if (!secondaryCore.Create())
+		{
+			DestroySecondary();
+			return false;
+		}
 	}
 	secondaryCore.RunFrame();
+	return true;
 }
 
-void DeserializeSecondary(void *buffer, int size)
+bool DeserializeSecondary(void *buffer, int size)
 {
 	if (secondaryCore.module == NULL)
 	{
-		secondaryCore.Create();
+		if (!secondaryCore.Create())
+		{
+			DestroySecondary();
+			return false;
+		}
 	}
-	secondaryCore.Deserialize(buffer, size);
+	if (!secondaryCore.Deserialize(buffer, size))
+	{
+		DestroySecondary();
+		return false;
+	}
+	return true;
 }
 
 void DestroySecondary()
 {
-	if (secondaryCore.module != NULL)
-	{
-		secondaryCore.Destroy();
-	}
+	secondaryCore.Destroy();
 }
+
+#else
+extern "C"
+{
+	void SetLoadContentInfo(const retro_ctx_load_content_info_t *ctx)
+	{
+		//do nothing
+	}
+	void SetLastCoreType(enum rarch_core_type type)
+	{
+		//do nothing
+	}
+	bool RunFrameSecondary()
+	{
+		return false;
+	}
+	bool DeserializeSecondary(void *buffer, int size)
+	{
+		return false;
+	}
+	void DestroySecondary()
+	{
+		//do nothing
+	}
+
+}
+#endif

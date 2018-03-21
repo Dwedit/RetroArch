@@ -701,6 +701,9 @@ static void audio_driver_flush(const int16_t *data, size_t samples)
  **/
 void audio_driver_sample(int16_t left, int16_t right)
 {
+   if (audio_suspended)
+      return;
+
    audio_driver_output_samples_conv_buf[audio_driver_data_ptr++] = left;
    audio_driver_output_samples_conv_buf[audio_driver_data_ptr++] = right;
 
@@ -1299,8 +1302,8 @@ void audio_driver_suspend(void)
    {
       audio_suspended = true;
       callback_backup.callback = audio_callback.callback;
+      audio_callback.callback = NULL;
       backup_audio_driver_active = audio_driver_active;
-      callback_backup.callback = NULL;
       audio_driver_active = false;
    }
 }
@@ -1311,7 +1314,9 @@ void audio_driver_resume(void)
    {
       audio_suspended = false;
       audio_callback.callback = callback_backup.callback;
+      callback_backup.callback = NULL;
       audio_driver_active = backup_audio_driver_active;
+      backup_audio_driver_active = false;
    }
 }
 

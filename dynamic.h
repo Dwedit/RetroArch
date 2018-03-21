@@ -133,7 +133,7 @@ bool libretro_get_shared_context(void);
 bool init_libretro_sym(enum rarch_core_type type,
       struct retro_core_t *core);
 
-bool init_libretro_sym_custom(enum rarch_core_type type, struct retro_core_t *current_core, const char *libPath, dylib_t *lib_handle_p);
+bool init_libretro_sym_custom(enum rarch_core_type type, struct retro_core_t *current_core, const char *lib_path, dylib_t *lib_handle_p);
 
 /**
  * uninit_libretro_sym:
@@ -145,8 +145,6 @@ bool init_libretro_sym_custom(enum rarch_core_type type, struct retro_core_t *cu
  * unbind all libretro callback symbols.
  **/
 void uninit_libretro_sym(struct retro_core_t *core);
-
-//void uninit_libretro_sym_custom(struct retro_core_t *core, dylib_t *lib_handle_p);
 
 RETRO_END_DECLS
 

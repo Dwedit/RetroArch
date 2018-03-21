@@ -1,8 +1,6 @@
 #include <compat/fopen_utf8.h>
 #include <encodings/utf.h>
 #include <stdlib.h>
-#include <stdbool.h>
-#include <stdio.h>
 
 #if defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0500 || defined(_XBOX)
 #ifndef LEGACY_WIN32
@@ -23,7 +21,6 @@ FILE* fopen_utf8(const char * filename, const char * mode)
 
    if (!filename_local)
       return NULL;
-
    ret = fopen(filename_local, mode);
    if (filename_local)
       free(filename_local);

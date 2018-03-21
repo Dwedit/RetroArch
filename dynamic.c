@@ -68,12 +68,12 @@
 
 #ifdef HAVE_DYNAMIC
 #define SYMBOL(x) do { \
-   function_t func = dylib_proc(lib_handle, #x); \
+   function_t func = dylib_proc(lib_handle_local, #x); \
    memcpy(&current_core->x, &func, sizeof(func)); \
    if (current_core->x == NULL) { RARCH_ERR("Failed to load symbol: \"%s\"\n", #x); retroarch_fail(1, "init_libretro_sym()"); } \
 } while (0)
 
-static dylib_t _default_lib_handle;
+static dylib_t lib_handle;
 #else
 #define SYMBOL(x) current_core->x = x
 #endif
@@ -214,10 +214,8 @@ static void libretro_get_environment_info(void (*func)(retro_environment_t),
    ignore_environment_cb = false;
 }
 
-static bool load_dynamic_core_custom(const char *path, dylib_t *lib_handle_p)
+static bool load_dynamic_core(void)
 {
-   if (path == NULL || lib_handle_p == NULL) return false;
-
    function_t sym       = dylib_proc(NULL, "retro_init");
 
    if (sym)
@@ -232,7 +230,7 @@ static bool load_dynamic_core_custom(const char *path, dylib_t *lib_handle_p)
       retroarch_fail(1, "init_libretro_sym()");
    }
 
-   if (string_is_empty(path))
+   if (string_is_empty(path_get(RARCH_PATH_CORE)))
    {
       RARCH_ERR("RetroArch is built for dynamic libretro cores, but "
             "libretro_path is not set. Cannot continue.\n");
@@ -243,28 +241,23 @@ static bool load_dynamic_core_custom(const char *path, dylib_t *lib_handle_p)
     * saved to content history, and a relative path would
     * break in that scenario. */
    path_resolve_realpath(
-         path,
-         strlen(path) + 1);
+         path_get_ptr(RARCH_PATH_CORE),
+         path_get_realsize(RARCH_PATH_CORE));
 
    RARCH_LOG("Loading dynamic libretro core from: \"%s\"\n",
-         path);
-   *lib_handle_p = dylib_load(path);
+         path_get(RARCH_PATH_CORE));
+   lib_handle = dylib_load(path_get(RARCH_PATH_CORE));
 
-   if (*lib_handle_p)
+   if (lib_handle)
       return true;
 
    RARCH_ERR("Failed to open libretro core: \"%s\"\n",
-         path);
+         path_get(RARCH_PATH_CORE));
    RARCH_ERR("Error(s): %s\n", dylib_error());
 
    runloop_msg_queue_push(msg_hash_to_str(MSG_FAILED_TO_OPEN_LIBRETRO_CORE), 1, 180, true);
 
    return false;
-}
-
-static bool load_dynamic_core(void)
-{
-   return load_dynamic_core_custom(path_get(RARCH_PATH_CORE), &_default_lib_handle);
 }
 
 static dylib_t libretro_get_system_info_lib(const char *path,
@@ -390,16 +383,32 @@ bool libretro_get_system_info(const char *path,
  * Setup libretro callback symbols. Returns true on success,
  * or false if symbols could not be loaded.
  **/
-static bool load_symbols_custom(enum rarch_core_type type, struct retro_core_t *current_core, const char *libPath, dylib_t *lib_handle_p)
+bool init_libretro_sym_custom(enum rarch_core_type type, struct retro_core_t *current_core, const char *lib_path, dylib_t *lib_handle_p)
 {
+   //the library handle for use with the SYMBOL macro
+   dylib_t lib_handle_local;
    switch (type)
    {
       case CORE_TYPE_PLAIN:
 #ifdef HAVE_DYNAMIC
-         retro_assert(libPath != NULL && lib_handle_p != NULL);
-         if (!load_dynamic_core_custom(libPath, lib_handle_p))
-            return false;
-         dylib_t lib_handle = *lib_handle_p;
+
+         if (lib_path == NULL || lib_handle_p == NULL)
+         {
+            if (!load_dynamic_core())
+               return false;
+            lib_handle_local = lib_handle;
+         }
+         else
+         {
+            //for a secondary core, we already have a primary library loaded, so we can skip some checks and just load the library
+            retro_assert(lib_path != NULL && lib_handle_p != NULL);
+            lib_handle_local = dylib_load(lib_path);
+            if (lib_handle_local == NULL)
+            {
+               return false;
+            }
+            *lib_handle_p = lib_handle_local;
+         }
 #endif
 
          SYMBOL(retro_init);
@@ -626,16 +635,11 @@ static bool load_symbols_custom(enum rarch_core_type type, struct retro_core_t *
 
 static bool load_symbols(enum rarch_core_type type, struct retro_core_t *current_core)
 {
-   const char *libPath = NULL;
-   dylib_t *lib_handle_p = NULL;
-#if HAVE_DYNAMIC
-   libPath = path_get(RARCH_PATH_CORE);
-   lib_handle_p = &_default_lib_handle;
-#endif
-   return load_symbols_custom(type, current_core, libPath, lib_handle_p);
+   return init_libretro_sym_custom(type, current_core, NULL, NULL);
 }
 
 extern void SetLastCoreType(enum rarch_core_type type);
+
 /**
  * init_libretro_sym:
  * @type                        : Type of core to be loaded.
@@ -649,25 +653,14 @@ extern void SetLastCoreType(enum rarch_core_type type);
 bool init_libretro_sym(enum rarch_core_type type, struct retro_core_t *current_core)
 {
    /* Guarantee that we can do "dirty" casting.
-   * Every OS that this program supports should pass this. */
-   retro_assert(sizeof(void*) == sizeof(void(*)(void)));
+    * Every OS that this program supports should pass this. */
+   retro_assert(sizeof(void*) == sizeof(void (*)(void)));
 
    if (!load_symbols(type, current_core))
       return false;
 
+   //remember last core type created, so creating a secondary core will know what core type to use
    SetLastCoreType(type);
-   return true;
-}
-
-bool init_libretro_sym_custom(enum rarch_core_type type, struct retro_core_t *current_core, const char *libPath, dylib_t *lib_handle_p)
-{
-   /* Guarantee that we can do "dirty" casting.
-   * Every OS that this program supports should pass this. */
-   retro_assert(sizeof(void*) == sizeof(void(*)(void)));
-
-   if (!load_symbols_custom(type, current_core, libPath, lib_handle_p))
-      return false;
-
    return true;
 }
 
@@ -685,14 +678,12 @@ bool libretro_get_shared_context(void)
  * associated state, and
  * unbind all libretro callback symbols.
  **/
-void uninit_libretro_sym_custom(struct retro_core_t *current_core, dylib_t *lib_handle_p)
+void uninit_libretro_sym(struct retro_core_t *current_core)
 {
 #ifdef HAVE_DYNAMIC
-   if (lib_handle_p && *lib_handle_p)
-   {
-      dylib_close(*lib_handle_p);
-      *lib_handle_p = NULL;
-   }
+   if (lib_handle)
+      dylib_close(lib_handle);
+   lib_handle = NULL;
 #endif
 
    memset(current_core, 0, sizeof(struct retro_core_t));
@@ -707,15 +698,6 @@ void uninit_libretro_sym_custom(struct retro_core_t *current_core, dylib_t *lib_
 
    /* Performance counters no longer valid. */
    performance_counters_clear();
-}
-
-void uninit_libretro_sym(struct retro_core_t *current_core)
-{
-#ifdef HAVE_DYNAMIC
-   uninit_libretro_sym_custom(current_core, &_default_lib_handle);
-#else
-   uninit_libretro_sym_custom(current_core, NULL);
-#endif
 }
 
 static void rarch_log_libretro(enum retro_log_level level,

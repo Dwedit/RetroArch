@@ -1,4 +1,5 @@
 #pragma once
+//This exists to allow Load Content to be called a second time using the same information
 #include "core.h"
 #include "lists/string_list.h"
 #include <vector>
