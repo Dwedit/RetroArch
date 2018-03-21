@@ -101,6 +101,7 @@ public:
 		if (runAheadCount <= 0 || !runAheadAvailable)
 		{
 			core_run();
+			forceInputDirty = true;
 			return;
 		}
 
@@ -110,6 +111,7 @@ public:
 			{
 				//runloop_msg_queue_push("RunAhead has been disabled because the core does not support savestates", 1, 180, true);
 				core_run();
+				forceInputDirty = true;
 				return;
 			}
 		}
@@ -119,6 +121,7 @@ public:
 		
 		if (!useSecondary || !HAVE_DYNAMIC || !secondaryCoreAvailable)
 		{
+			forceInputDirty = true;
 			for (frameNumber = 0; frameNumber <= runAheadCount; frameNumber++)
 			{
 				bool lastFrame = frameNumber == runAheadCount;
