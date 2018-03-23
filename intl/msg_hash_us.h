@@ -1443,7 +1443,7 @@ MSG_HASH(MENU_ENUM_LABEL_VALUE_SHUTDOWN,
       "Shutdown")
 MSG_HASH(MENU_ENUM_LABEL_VALUE_SLOWMOTION_RATIO,
       "Slow-Motion Ratio")
-MSG_HASH(MENU_ENUM_LABEL_VALUE_LOOKAHEAD_REDUCTION,
+MSG_HASH(MENU_ENUM_LABEL_VALUE_RUN_AHEAD_ENABLED,
       "Run-Ahead to Reduce Latency")
 MSG_HASH(MENU_ENUM_LABEL_VALUE_RUN_AHEAD_FRAMES,
       "Number of Frames to Run Ahead")
@@ -2723,7 +2723,7 @@ MSG_HASH(
       "When in slow motion, content will slow down by the factor specified/set."
       )
 MSG_HASH(
-      MENU_ENUM_SUBLABEL_LOOKAHEAD_REDUCTION,
+      MENU_ENUM_SUBLABEL_RUN_AHEAD_ENABLED,
       "Run core logic one or more frames ahead then load the state back to reduce perceived input lag."
       )
 MSG_HASH(

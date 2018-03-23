@@ -3243,12 +3243,17 @@ int runloop_iterate(unsigned *sleep_ms)
       retro_sleep(settings->uints.video_frame_delay);
 
    /* Dwedit lookahead control latency reduction. */
-   if (settings->bools.lookahead_reduction && settings->uints.run_ahead_frames > 0)
+   if (settings->bools.run_ahead_enabled && settings->uints.run_ahead_frames > 0)
    {
+      extern void RunAhead(int frameCount, bool useSecondaryInstance);
       RunAhead(settings->uints.run_ahead_frames, settings->bools.run_ahead_secondary_instance);
    }
    else
    {
+//#if HAVE_DYNAMIC
+//      extern bool InputIsDirty;
+//      InputIsDirty = true;
+//#endif
       core_run();
    }
 

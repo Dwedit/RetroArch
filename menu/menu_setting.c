@@ -4821,9 +4821,9 @@ static bool setting_append_list(
 
          CONFIG_BOOL(
                list, list_info,
-               &settings->bools.lookahead_reduction,
-               MENU_ENUM_LABEL_LOOKAHEAD_REDUCTION,
-               MENU_ENUM_LABEL_VALUE_LOOKAHEAD_REDUCTION,
+               &settings->bools.run_ahead_enabled,
+               MENU_ENUM_LABEL_RUN_AHEAD_ENABLED,
+               MENU_ENUM_LABEL_VALUE_RUN_AHEAD_ENABLED,
                false,
                MENU_ENUM_LABEL_VALUE_OFF,
                MENU_ENUM_LABEL_VALUE_ON,

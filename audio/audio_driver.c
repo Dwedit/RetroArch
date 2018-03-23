@@ -1308,6 +1308,11 @@ void audio_driver_suspend(void)
    }
 }
 
+bool audio_driver_is_suspended(void)
+{
+   return audio_suspended;
+}
+
 void audio_driver_resume(void)
 {
    if (audio_suspended == true)

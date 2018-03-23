@@ -1219,7 +1219,7 @@ static struct config_bool_setting *populate_settings_bool(settings_t *settings, 
    SETTING_BOOL("ui_menubar_enable",             &settings->bools.ui_menubar_enable, true, true, false);
    SETTING_BOOL("suspend_screensaver_enable",    &settings->bools.ui_suspend_screensaver_enable, true, true, false);
    SETTING_BOOL("rewind_enable",                 &settings->bools.rewind_enable, true, rewind_enable, false);
-   SETTING_BOOL("lookahead_reduction",           &settings->bools.lookahead_reduction, true, false, false);
+   SETTING_BOOL("run_ahead_enabled",             &settings->bools.run_ahead_enabled, true, false, false);
    SETTING_BOOL("run_ahead_secondary_instance",  &settings->bools.run_ahead_secondary_instance, true, false, false);
    SETTING_BOOL("audio_sync",                    &settings->bools.audio_sync, true, audio_sync, false);
    SETTING_BOOL("video_shader_enable",           &settings->bools.video_shader_enable, true, shader_enable, false);

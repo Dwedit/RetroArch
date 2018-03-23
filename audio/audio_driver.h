@@ -153,7 +153,7 @@ void audio_driver_set_own_driver(void);
 void audio_driver_unset_own_driver(void);
 
 void audio_driver_suspend(void);
-
+bool audio_driver_is_suspended(void);
 void audio_driver_resume(void);
 
 void audio_driver_set_active(void);

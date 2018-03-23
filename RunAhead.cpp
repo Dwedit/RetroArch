@@ -21,54 +21,69 @@ extern "C"
 }
 
 #if HAVE_DYNAMIC
-extern bool InputIsDirty;
+extern "C"
+{
+	extern bool InputIsDirty;
+}
 #endif
+
+typedef bool(*LoadStateFunction)(const void*, size_t);
 
 function_t originalRetroDeinit = NULL;
 function_t originalRetroUnload = NULL;
 function_t originalRetroReset = NULL;
+LoadStateFunction originalRetroDeserialize = NULL;
 
 void DeinitHook();
 void UnloadHook();
 void ResetHook();
+bool LoadStateHook(const void *buf, size_t size);
 
-void AddDestroyHook()
+void AddHooks()
 {
 	if (originalRetroDeinit == NULL)
 	{
 		originalRetroDeinit = current_core.retro_deinit;
-		originalRetroUnload = current_core.retro_unload_game;
 		current_core.retro_deinit = DeinitHook;
+	}
+	if (originalRetroUnload == NULL)
+	{
+		originalRetroUnload = current_core.retro_unload_game;
 		current_core.retro_unload_game = UnloadHook;
 	}
-}
-
-void RemoveDestroyHook()
-{
-	if (originalRetroDeinit != NULL)
-	{
-		current_core.retro_deinit = originalRetroDeinit;
-		current_core.retro_unload_game = originalRetroUnload;
-		originalRetroDeinit = NULL;
-		originalRetroUnload = NULL;
-	}
-}
-
-void AddResetHook()
-{
 	if (originalRetroReset == NULL)
 	{
 		originalRetroReset = current_core.retro_reset;
 		current_core.retro_reset = ResetHook;
 	}
+	if (originalRetroDeserialize == NULL)
+	{
+		originalRetroDeserialize = current_core.retro_unserialize;
+		current_core.retro_unserialize = LoadStateHook;
+	}
 }
 
-void RemoveResetHook()
+void RemoveHooks()
 {
+	if (originalRetroDeinit != NULL)
+	{
+		current_core.retro_deinit = originalRetroDeinit;
+		originalRetroDeinit = NULL;
+	}
+	if (originalRetroUnload != NULL)
+	{
+		current_core.retro_unload_game = originalRetroUnload;
+		originalRetroUnload = NULL;
+	}
 	if (originalRetroReset != NULL)
 	{
 		current_core.retro_reset = originalRetroReset;
 		originalRetroReset = NULL;
+	}
+	if (originalRetroDeserialize != NULL)
+	{
+		current_core.retro_unserialize = originalRetroDeserialize;
+		originalRetroDeserialize = NULL;
 	}
 }
 
@@ -80,6 +95,7 @@ class RunAheadContext
 	bool videoDriverIsActive;
 	bool runAheadAvailable;
 	bool secondaryCoreAvailable;
+	uint64_t lastFrameCount;
 
 public:
 	bool forceInputDirty;
@@ -93,6 +109,7 @@ public:
 		runAheadAvailable = true;
 		secondaryCoreAvailable = true;
 		forceInputDirty = true;
+		lastFrameCount = 0;
 	}
 
 	void RunAhead(int runAheadCount, bool useSecondary)
@@ -115,6 +132,16 @@ public:
 				return;
 			}
 		}
+
+		//Hack: If we were in the GUI changing any settings, force a resync.
+		uint64_t frameCount;
+		bool isAlive, isFocused;
+		video_driver_get_status(&frameCount, &isAlive, &isFocused);
+		if (frameCount != lastFrameCount + 1)
+		{
+			forceInputDirty = true;
+		}
+		lastFrameCount = frameCount;
 
 		int runAhead = runAheadCount;
 		int frameNumber = 0;
@@ -208,8 +235,7 @@ public:
 	{
 		runAheadAvailable = false;
 
-		RemoveResetHook();
-		RemoveDestroyHook();
+		RemoveHooks();
 
 		saveStateSize = 0;
 		saveStateData.clear();
@@ -251,8 +277,7 @@ public:
 			return false;
 		}
 
-		AddResetHook();
-		AddDestroyHook();
+		AddHooks();
 
 		forceInputDirty = true;
 		return true;
@@ -351,8 +376,7 @@ extern "C"
 
 void DeinitHook()
 {
-	RemoveResetHook();
-	RemoveDestroyHook();
+	RemoveHooks();
 	runAheadContext.Destroy();
 	DestroySecondary();
 	if (current_core.retro_deinit)
@@ -363,8 +387,7 @@ void DeinitHook()
 
 void UnloadHook()
 {
-	RemoveResetHook();
-	RemoveDestroyHook();
+	RemoveHooks();
 	runAheadContext.Destroy();
 	DestroySecondary();
 	if (current_core.retro_unload_game)
@@ -380,4 +403,14 @@ void ResetHook()
 	{
 		originalRetroReset();
 	}
+}
+
+bool LoadStateHook(const void *buf, size_t size)
+{
+	runAheadContext.forceInputDirty = true;
+	if (originalRetroDeserialize)
+	{
+		return originalRetroDeserialize(buf, size);
+	}
+	return false;
 }

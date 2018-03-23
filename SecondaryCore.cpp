@@ -62,7 +62,10 @@ RETRO_API void retro_unload_game(void);
 retro_input_state_t originalInputStateCallback;
 map<tuple<unsigned, unsigned, unsigned, unsigned>, int16_t> inputStateMap;
 
-bool InputIsDirty;
+extern "C"
+{
+	bool InputIsDirty;
+}
 
 static int16_t input_state_getlast(unsigned port, unsigned device,
 	unsigned index, unsigned id)
