@@ -1585,6 +1585,11 @@ void video_driver_unset_stub_frame(void)
    frame_bak = NULL;
 }
 
+bool video_driver_is_stub_frame(void)
+{
+   return current_video->frame == video_null.frame;
+}
+
 bool video_driver_supports_recording(void)
 {
    settings_t *settings = config_get_ptr();

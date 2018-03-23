@@ -905,6 +905,7 @@ void video_driver_destroy(void);
 void video_driver_set_cached_frame_ptr(const void *data);
 void video_driver_set_stub_frame(void);
 void video_driver_unset_stub_frame(void);
+bool video_driver_is_stub_frame(void);
 bool video_driver_supports_recording(void);
 bool video_driver_supports_viewport_read(void);
 bool video_driver_supports_read_frame_raw(void);
