@@ -258,10 +258,15 @@ bool core_init_symbols(enum rarch_core_type *type)
    return true;
 }
 
+extern void RememberControllerPortDevice(long port, long device);
+
 bool core_set_controller_port_device(retro_ctx_controller_info_t *pad)
 {
    if (!pad)
       return false;
+
+   RememberControllerPortDevice(pad->port, pad->device);
+
    current_core.retro_set_controller_port_device(pad->port, pad->device);
    return true;
 }

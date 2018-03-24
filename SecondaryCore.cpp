@@ -61,6 +61,7 @@ RETRO_API void retro_unload_game(void);
 
 retro_input_state_t originalInputStateCallback;
 map<tuple<unsigned, unsigned, unsigned, unsigned>, int16_t> inputStateMap;
+map<long, long> ControllerPortDeviceMap;
 
 extern "C"
 {
@@ -199,7 +200,7 @@ public:
 			core.retro_set_environment(rarch_environment_cb);
 			//run init
 			core.retro_init();
-			
+
 			bool contentless, is_inited;
 			::content_get_status(&contentless, &is_inited);
 			core.inited = is_inited;
@@ -240,6 +241,16 @@ public:
 				Destroy();
 				return false;
 			}
+
+			for (auto iterator = ControllerPortDeviceMap.begin(); iterator != ControllerPortDeviceMap.end(); iterator++)
+			{
+				long port = iterator->first;
+				long device = iterator->second;
+				core.retro_set_controller_port_device(port, device);
+			}
+			ControllerPortDeviceMap.clear();
+
+
 		}
 		else
 		{
@@ -423,6 +434,8 @@ string CopyCoreToTempFile(bool &okay)
 	return tempDllPath;
 }
 
+SecondaryCoreContext secondaryCore;
+
 extern "C"
 {
 	void SetLoadContentInfo(const retro_ctx_load_content_info_t *ctx)
@@ -437,9 +450,16 @@ extern "C"
 	{
 		lastCoreType = type;
 	}
+	void RememberControllerPortDevice(long port, long device)
+	{
+		ControllerPortDeviceMap[port] = device;
+		if (secondaryCore.module != NULL && secondaryCore.core.retro_set_controller_port_device != NULL)
+		{
+			secondaryCore.core.retro_set_controller_port_device(port, device);
+		}
+	}
 }
 
-SecondaryCoreContext secondaryCore;
 
 bool RunFrameSecondary()
 {
@@ -476,6 +496,7 @@ bool DeserializeSecondary(void *buffer, int size)
 void DestroySecondary()
 {
 	secondaryCore.Destroy();
+	ControllerPortDeviceMap.clear();
 }
 
 #else
@@ -500,6 +521,10 @@ extern "C"
 	void DestroySecondary()
 	{
 		//do nothing
+	}
+	void RememberControllerPortDevice(long port, long device)
+	{
+
 	}
 
 }
