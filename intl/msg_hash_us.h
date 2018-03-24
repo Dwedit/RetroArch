@@ -1373,6 +1373,8 @@ MSG_HASH(MENU_ENUM_LABEL_VALUE_ADD_TO_FAVORITES,
       "Add to Favorites")
 MSG_HASH(MENU_ENUM_LABEL_VALUE_ADD_TO_FAVORITES_PLAYLIST,
       "Add to Favorites")
+MSG_HASH(MENU_ENUM_LABEL_VALUE_RESET_CORE_ASSOCIATION,
+      "Reset Core Association")
 MSG_HASH(MENU_ENUM_LABEL_VALUE_RUN,
       "Run")
 MSG_HASH(MENU_ENUM_LABEL_VALUE_RUN_MUSIC,
@@ -2015,6 +2017,8 @@ MSG_HASH(MENU_ENUM_SUBLABEL_HELP_LIST,
       "Learn more about how the program works.")
 MSG_HASH(MSG_ADDED_TO_FAVORITES,
       "Added to favorites")
+MSG_HASH(MSG_RESET_CORE_ASSOCIATION,
+      "Playlist entry core association has been reset.")      
 MSG_HASH(MSG_APPENDED_DISK,
       "Appended disk")
 MSG_HASH(MSG_APPLICATION_DIR,
@@ -2096,7 +2100,7 @@ MSG_HASH(MSG_DISK_EJECTED,
 MSG_HASH(MSG_DOWNLOADING,
       "Downloading")
 MSG_HASH(MSG_INDEX_FILE,
-      "Index File")
+      "index")
 MSG_HASH(MSG_DOWNLOAD_FAILED,
       "Download failed")
 MSG_HASH(MSG_ERROR,
@@ -3449,3 +3453,7 @@ MSG_HASH(MENU_ENUM_SUBLABEL_SHADER_WATCH_FOR_CHANGES,
       "Auto-apply changes made to shader files on disk.")
 MSG_HASH(MENU_ENUM_LABEL_VALUE_VIDEO_WINDOW_SHOW_DECORATIONS,
       "Show Window Decorations")
+MSG_HASH(MENU_ENUM_LABEL_VALUE_STATISTICS_SHOW,
+      "Display Statistics")
+MSG_HASH(MENU_ENUM_SUBLABEL_STATISTICS_SHOW,
+      "Show onscreen technical statistics.")

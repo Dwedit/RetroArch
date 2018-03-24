@@ -1037,7 +1037,7 @@ static int cheevos_parse_expression(cheevos_expr_t *expr, const char* mem)
 
    for (aux = mem;; aux++)
    {
-      if(*aux == '"' || *aux == ':')
+      if (*aux == '"' || *aux == ':')
          break;
       expr->count += *aux == '_';
    }
@@ -1094,13 +1094,13 @@ static int cheevos_parse_expression(cheevos_expr_t *expr, const char* mem)
       }
       else
       {
-         if(aux[1] == 'h' || aux[1] == 'H')
+         if (aux[1] == 'h' || aux[1] == 'H')
             expr->terms[i].multiplier = (double)strtol(aux + 2, &end, 16);
          else
             expr->terms[i].multiplier = strtod(aux + 1, &end);
          aux = end;
 
-         if(*aux == '$')
+         if (*aux == '$')
          {
             aux++;
             expr->terms[i].compare_next = true;
@@ -1964,7 +1964,7 @@ static void cheevos_test_cheevo_set(const cheevoset_t *set)
             task_push_http_transfer(url, true, NULL,
                   cheevos_unlocked, cheevo);
 
-            if(settings->bools.cheevos_auto_screenshot)
+            if (settings && settings->bools.cheevos_auto_screenshot)
             {
                char shotname[256];
 
@@ -1974,7 +1974,8 @@ static void cheevos_test_cheevo_set(const cheevoset_t *set)
                   cheevo->id);
                shotname[sizeof(shotname) - 1] = '\0';
 
-               if(take_screenshot(shotname, true, video_driver_cached_frame_has_valid_framebuffer()))
+               if (take_screenshot(shotname, true,
+                        video_driver_cached_frame_has_valid_framebuffer()))
                   RARCH_LOG("[CHEEVOS]: got a screenshot for cheevo %u\n", cheevo->id);
                else
                   RARCH_LOG("[CHEEVOS]: failed to get screenshot for cheevo %u\n", cheevo->id);
@@ -2839,21 +2840,22 @@ typedef struct
 enum
 {
    /* Negative values because CORO_SUB generates positive values */
-   SNES_MD5    = -1,
-   GENESIS_MD5 = -2,
-   LYNX_MD5    = -3,
-   NES_MD5     = -4,
-   GENERIC_MD5 = -5,
-   EVAL_MD5    = -6,
-   FILL_MD5    = -7,
-   GET_GAMEID  = -8,
-   GET_CHEEVOS = -9,
-   GET_BADGES  = -10,
-   LOGIN       = -11,
-   HTTP_GET    = -12,
-   DEACTIVATE  = -13,
-   PLAYING     = -14,
-   DELAY       = -15
+   SNES_MD5     = -1,
+   GENESIS_MD5  = -2,
+   LYNX_MD5     = -3,
+   NES_MD5      = -4,
+   GENERIC_MD5  = -5,
+   FILENAME_MD5 = -6,
+   EVAL_MD5     = -7,
+   FILL_MD5     = -8,
+   GET_GAMEID   = -9,
+   GET_CHEEVOS  = -10,
+   GET_BADGES   = -11,
+   LOGIN        = -12,
+   HTTP_GET     = -13,
+   DEACTIVATE   = -14,
+   PLAYING      = -15,
+   DELAY        = -16
 };
 
 static int cheevos_iterate(coro_t *coro)
@@ -2903,7 +2905,8 @@ static int cheevos_iterate(coro_t *coro)
       {GENESIS_MD5, "Genesis (6Mb padding)",             genesis_exts},
       {LYNX_MD5,    "Atari Lynx (only first 512 bytes)", lynx_exts},
       {NES_MD5,     "NES (discards VROM)",               NULL},
-      {GENERIC_MD5, "Generic (plain content)",           NULL}
+      {GENERIC_MD5, "Generic (plain content)",           NULL},
+      {FILENAME_MD5, "Generic (filename)",               NULL}
    };
 
    CORO_ENTER();
@@ -3163,7 +3166,7 @@ found:
             mode = CHEEVOS_ACTIVE_HARDCORE;
 
          for (; cheevo < end; cheevo++)
-            if(cheevo->active & mode)
+            if (cheevo->active & mode)
                number_of_unlocked--;
 
          snprintf(msg, sizeof(msg),
@@ -3348,6 +3351,23 @@ found:
          CORO_RET();
 
       CORO_GOTO(GET_GAMEID);
+
+      /**************************************************************************
+       * Info  Tries to identify a game based on its filename (with no extension)
+         * Input  CHEEVOS_VAR_INFO the content info
+         * Output CHEEVOS_VAR_GAMEID the Retro Achievements game ID, or 0 if not found
+         *************************************************************************/
+   CORO_SUB(FILENAME_MD5)
+   {
+      char base_noext[PATH_MAX_LENGTH];
+      fill_pathname_base_noext(base_noext, coro->path, sizeof(base_noext));
+
+      MD5_Init(&coro->md5);
+      MD5_Update(&coro->md5, (void*)base_noext, strlen(base_noext));
+      MD5_Final(coro->hash, &coro->md5);
+
+      CORO_GOTO(GET_GAMEID);
+   }
 
       /**************************************************************************
        * Info    Evaluates the CHEEVOS_VAR_MD5 hash
