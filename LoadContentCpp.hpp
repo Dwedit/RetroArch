@@ -41,7 +41,8 @@ struct RetroGameInfo : public retro_game_info
 		{
 			size = info.size;
 			Data.resize(info.size);
-			data = &Data[0];
+			data = NULL;
+			if (Data.size() > 0) data = &Data[0];
 			memcpy(&Data[0], info.data, Data.size());
 		}
 		if (info.meta != NULL)
@@ -67,7 +68,8 @@ struct StringListElem : public string_list_elem
 		if (elem.data != NULL)
 		{
 			Data = elem.data;
-			data = &Data[0];
+			data = NULL;
+			if (Data.size() > 0) data = &Data[0];
 		}
 		attr = elem.attr;
 	}
@@ -96,7 +98,8 @@ struct StringList : public string_list
 		{
 			Elems.resize(stringList.size);
 			size = Elems.size();
-			elems = &Elems[0];
+			elems = NULL;
+			if (Elems.size() > 0) elems = &Elems[0];
 			for (int i = 0; i < size; i++)
 			{
 				Elems[i].Assign(stringList.elems[i]);
@@ -152,7 +155,8 @@ struct RetroSubsystemRomInfo : public retro_subsystem_rom_info
 		if (info.memory != NULL && info.num_memory > 0)
 		{
 			Memory.resize(num_memory);
-			memory = &Memory[0];
+			memory = NULL;
+			if (Memory.size() > 0) memory = &Memory[0];
 			num_memory = Memory.size();
 			for (int i = 0; i < num_memory; i++)
 			{
@@ -207,7 +211,8 @@ struct RetroSubsystemInfo : public retro_subsystem_info
 		if (info.roms != NULL && info.num_roms > 0)
 		{
 			Roms.resize(info.num_roms);
-			roms = &Roms[0];
+			roms = NULL;
+			if (Roms.size() > 0) roms = &Roms[0];
 			num_roms = Roms.size();
 			for (int i = 0; i < num_roms; i++)
 			{
@@ -249,6 +254,10 @@ struct RetroCtxLoadContentInfo : public retro_ctx_load_content_info
 			Info.Assign(*ctx.info);
 			info = &Info;
 		}
+		//TESTING
+		//this->content = ctx.content;
+		//this->special = ctx.special;
+		
 		if (ctx.content != NULL)
 		{
 			Content.Assign(*ctx.content);
@@ -259,5 +268,6 @@ struct RetroCtxLoadContentInfo : public retro_ctx_load_content_info
 			Special.Assign(*ctx.special);
 			special = &Special;
 		}
+		
 	}
 };

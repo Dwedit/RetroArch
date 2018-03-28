@@ -10,14 +10,15 @@ using std::string;
 
 typedef unsigned char byte;
 
-bool RunFrameSecondary();
-bool DeserializeSecondary(void *buffer, int size);
-void DestroySecondary();
-
 extern "C"
 {
 	extern struct retro_callbacks retro_ctx;
 	extern struct retro_core_t current_core;
+
+	bool run_secondary_core_no_input_polling();
+	bool DeserializeSecondary(void *buffer, int size);
+	void DestroySecondary();
+
 }
 
 #if HAVE_DYNAMIC
@@ -158,7 +159,14 @@ public:
 					SuspendAudio();
 					SuspendVideo();
 				}
-				core_run();
+				if (frameNumber == 0)
+				{
+					core_run();
+				}
+				else
+				{
+					core_run_no_input_polling();
+				}
 				if (suspendedFrame)
 				{
 					ResumeVideo();
@@ -316,7 +324,7 @@ public:
 	}
 	bool RunSecondary()
 	{
-		bool okay = RunFrameSecondary();
+		bool okay = run_secondary_core_no_input_polling();
 		if (!okay)
 		{
 			secondaryCoreAvailable = false;

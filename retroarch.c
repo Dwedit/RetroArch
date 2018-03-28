@@ -743,6 +743,11 @@ static void retroarch_parse_input_and_config(int argc, char *argv[])
                   RARCH_OVERRIDE_SETTING_STATE_PATH, NULL);
             break;
 
+         /* Must handle '?' otherwise you get an infinite loop */
+         case '?':
+            retroarch_print_help(argv[0]);
+            retroarch_fail(1, "retroarch_parse_input()");
+            break;
          /* All other arguments are handled in the second pass */
       }
    }
@@ -3246,8 +3251,8 @@ int runloop_iterate(unsigned *sleep_ms)
    /* Dwedit lookahead control latency reduction. */
    if (settings->bools.run_ahead_enabled && settings->uints.run_ahead_frames > 0)
    {
-      extern void RunAhead(int frameCount, bool useSecondaryInstance);
-      RunAhead(settings->uints.run_ahead_frames, settings->bools.run_ahead_secondary_instance);
+      extern void run_ahead(int frameCount, bool useSecondaryInstance);
+      run_ahead(settings->uints.run_ahead_frames, settings->bools.run_ahead_secondary_instance);
    }
    else
    {

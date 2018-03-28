@@ -1,7 +1,7 @@
 #ifndef __UNLINK_UTF8_H
 #define __UNLINK_UTF8_H
 
-#include <stdbool.h>
+#include "boolean.h"
 
 #ifdef _WIN32
 

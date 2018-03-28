@@ -638,7 +638,7 @@ static bool load_symbols(enum rarch_core_type type, struct retro_core_t *current
    return init_libretro_sym_custom(type, current_core, NULL, NULL);
 }
 
-extern void SetLastCoreType(enum rarch_core_type type);
+extern void set_last_core_type(enum rarch_core_type type);
 
 /**
  * init_libretro_sym:
@@ -659,8 +659,8 @@ bool init_libretro_sym(enum rarch_core_type type, struct retro_core_t *current_c
    if (!load_symbols(type, current_core))
       return false;
 
-   //remember last core type created, so creating a secondary core will know what core type to use
-   SetLastCoreType(type);
+   /* remember last core type created, so creating a secondary core will know what core type to use */
+   set_last_core_type(type);
    return true;
 }
 

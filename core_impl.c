@@ -258,14 +258,14 @@ bool core_init_symbols(enum rarch_core_type *type)
    return true;
 }
 
-extern void RememberControllerPortDevice(long port, long device);
+extern void remember_controller_port_device(long port, long device);
 
 bool core_set_controller_port_device(retro_ctx_controller_info_t *pad)
 {
    if (!pad)
       return false;
 
-   RememberControllerPortDevice(pad->port, pad->device);
+   remember_controller_port_device(pad->port, pad->device);
 
    current_core.retro_set_controller_port_device(pad->port, pad->device);
    return true;
@@ -280,11 +280,11 @@ bool core_get_memory(retro_ctx_memory_info_t *info)
    return true;
 }
 
-extern void SetLoadContentInfo(const retro_ctx_load_content_info_t *ctx);
+extern void set_load_content_info(const retro_ctx_load_content_info_t *ctx);
 
 bool core_load_game(retro_ctx_load_content_info_t *load_info)
 {
-   SetLoadContentInfo(load_info);
+   set_load_content_info(load_info);
 
    bool contentless = false;
    bool is_inited   = false;
@@ -430,6 +430,12 @@ bool core_run(void)
    netplay_driver_ctl(RARCH_NETPLAY_CTL_POST_FRAME, NULL);
 #endif
 
+   return true;
+}
+
+bool core_run_no_input_polling(void)
+{
+   current_core.retro_run();
    return true;
 }
 
