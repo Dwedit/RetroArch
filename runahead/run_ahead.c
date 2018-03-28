@@ -108,10 +108,6 @@ extern struct retro_callbacks retro_ctx;
 static void deinit_hook(void);
 static void unload_hook(void);
 
-//bool secondary_core_run_no_input_polling();
-//bool secondary_core_deserialize(void *buffer, int size);
-//void secondary_core_destroy(void);
-
 static void add_hooks(void)
 {
 	if (originalRetroDeinit == NULL)
@@ -166,7 +162,6 @@ static void unload_hook(void)
 
 /* Runahead Code */
 
-//static retro_ctx_serialize_info_t runahead_serial_info;
 static bool runahead_video_driver_is_active = true;
 static bool runahead_available = true;
 static bool runahead_secondary_core_available = true;
@@ -215,7 +210,7 @@ void run_ahead(int runAheadCount, bool useSecondary)
 	{
 		if (!runahead_create())
 		{
-			//runloop_msg_queue_push("RunAhead has been disabled because the core does not support savestates", 1, 180, true);
+			/*runloop_msg_queue_push("RunAhead has been disabled because the core does not support savestates", 1, 180, true);*/
 			core_run();
 			runahead_force_input_dirty = true;
 			return;
@@ -253,7 +248,7 @@ void run_ahead(int runAheadCount, bool useSecondary)
 			{
 				if (!runahead_save_state())
 				{
-					//runloop_msg_queue_push("RunAhead has been disabled due to save state failure", 1, 180, true);
+					/*runloop_msg_queue_push("RunAhead has been disabled due to save state failure", 1, 180, true);*/
 					return;
 				}
 			}
@@ -261,7 +256,7 @@ void run_ahead(int runAheadCount, bool useSecondary)
 			{
 				if (!runahead_load_state())
 				{
-					//runloop_msg_queue_push("RunAhead has been disabled due to load state failure", 1, 180, true);
+					/*runloop_msg_queue_push("RunAhead has been disabled due to load state failure", 1, 180, true);*/
 					return;
 				}
 			}
@@ -284,7 +279,7 @@ void run_ahead(int runAheadCount, bool useSecondary)
 			}
 			if (!runahead_load_state_secondary())
 			{
-				//runloop_msg_queue_push("Could not create a secondary core. RunAhead will only use the main core now.", 1, 180, true);
+				/*runloop_msg_queue_push("Could not create a secondary core. RunAhead will only use the main core now.", 1, 180, true);*/
 				return;
 			}
 			for (int frameCount = 0; frameCount < runAheadCount - 1; frameCount++)
@@ -296,7 +291,7 @@ void run_ahead(int runAheadCount, bool useSecondary)
 				runahead_resume_video();
 				if (!okay)
 				{
-					//runloop_msg_queue_push("Could not create a secondary core. RunAhead will only use the main core now.", 1, 180, true);
+					/*runloop_msg_queue_push("Could not create a secondary core. RunAhead will only use the main core now.", 1, 180, true);*/
 					return;
 				}
 			}
@@ -306,7 +301,7 @@ void run_ahead(int runAheadCount, bool useSecondary)
 		runahead_resume_audio();
 		if (!okay)
 		{
-			//runloop_msg_queue_push("Could not create a secondary core. RunAhead will only use the main core now.", 1, 180, true);
+			/*runloop_msg_queue_push("Could not create a secondary core. RunAhead will only use the main core now.", 1, 180, true);*/
 			return;
 		}
 #endif

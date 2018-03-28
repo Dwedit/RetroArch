@@ -385,7 +385,7 @@ bool libretro_get_system_info(const char *path,
  **/
 bool init_libretro_sym_custom(enum rarch_core_type type, struct retro_core_t *current_core, const char *lib_path, dylib_t *lib_handle_p)
 {
-   //the library handle for use with the SYMBOL macro
+   /* the library handle for use with the SYMBOL macro */
    dylib_t lib_handle_local;
    switch (type)
    {
@@ -400,7 +400,7 @@ bool init_libretro_sym_custom(enum rarch_core_type type, struct retro_core_t *cu
          }
          else
          {
-            //for a secondary core, we already have a primary library loaded, so we can skip some checks and just load the library
+            /* for a secondary core, we already have a primary library loaded, so we can skip some checks and just load the library */
             retro_assert(lib_path != NULL && lib_handle_p != NULL);
             lib_handle_local = dylib_load(lib_path);
             if (lib_handle_local == NULL)

@@ -51,7 +51,7 @@ static void input_state_setlast(unsigned port, unsigned device, unsigned index, 
 		mylist_create(&inputStateList, 16, InputListElementConstructor, free);
 	}
 
-	//find list item
+	/* find list item */
 	for (i = 0; i < inputStateList->size; i++)
 	{
 		element = (InputListElement*)inputStateList->data[i];
@@ -76,7 +76,7 @@ static int16_t input_state_getlast(unsigned port, unsigned device, unsigned inde
 	{
 		return 0;
 	}
-	//find list item
+	/* find list item */
 	for (i = 0; i < inputStateList->size; i++)
 	{
 		element = (InputListElement*)inputStateList->data[i];

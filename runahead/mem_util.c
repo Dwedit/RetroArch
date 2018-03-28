@@ -27,22 +27,6 @@ void free_ptr(void **data_p)
 	*data_p = NULL;
 }
 
-void free_file(FILE **file_p)
-{
-	bool result;
-	if (file_p == NULL)
-	{
-		return;
-	}
-	if (*file_p == NULL)
-	{
-		return;
-	}
-	result = fclose(*file_p) != 0;
-	*file_p = NULL;
-	return;
-}
-
 void *memcpy_alloc(const void *src, size_t size)
 {
 	void *result;

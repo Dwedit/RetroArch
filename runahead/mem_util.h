@@ -4,7 +4,6 @@
 #include "retro_common_api.h"
 #include "boolean.h"
 
-#include <stdio.h>
 #include <malloc.h>
 #include <stddef.h>
 #include <string.h>
@@ -16,7 +15,6 @@ RETRO_BEGIN_DECLS
 void *malloc_zero(size_t size);
 void free_str(char **str_p);
 void free_ptr(void **data_p);
-void free_file(FILE **file_p);
 char *strcpy_alloc(const char *sourceStr);
 char *strcpy_alloc_force(const char *sourceStr);
 void strcat_alloc(char ** destStr_p, const char *appendStr);

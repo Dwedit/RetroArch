@@ -82,7 +82,3 @@ FONTS
 #include "../deps/glslang/glslang/glslang/OSDependent/Unix/ossource.cpp"
 #endif
 #endif
-
-//Secondary Core and Run Ahead
-//#include "../RunAhead.cpp"
-//#include "../SecondaryCore.cpp"

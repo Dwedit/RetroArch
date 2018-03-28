@@ -1,6 +1,6 @@
 #include <compat/unlink_utf8.h>
 #include <encodings/utf.h>
-#include <stdbool.h>
+#include "boolean.h"
 #include <malloc.h>
 
 #if defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0500 || defined(_XBOX)

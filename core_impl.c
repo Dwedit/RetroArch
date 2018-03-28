@@ -44,6 +44,8 @@
 #include "gfx/video_driver.h"
 #include "audio/audio_driver.h"
 
+#include "runahead/copy_load_info.h"
+
 struct                     retro_callbacks retro_ctx;
 struct                     retro_core_t current_core;
 

@@ -20,7 +20,7 @@ void mylist_resize(MyList *list, int newSize, bool runConstructor)
 		{
 			newCapacity = list->capacity * 2;
 		}
-		//try to realloc
+		/* try to realloc */
 		list->data = (void**)realloc((void*)list->data, newCapacity * sizeof(void*));
 		for (i = list->capacity; i < newCapacity; i++)
 		{

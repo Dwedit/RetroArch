@@ -51,6 +51,8 @@ void set_last_core_type(enum rarch_core_type type);
 void remember_controller_port_device(long port, long device);
 void clear_controller_port_map(void);
 
+static void free_file(FILE **file_p);
+
 char* get_temp_directory_alloc(void)
 {
 #ifdef _WIN32
@@ -307,7 +309,6 @@ bool secondary_core_create(void)
       secondary_core.retro_set_input_poll(secondary_callbacks.poll_cb);
       secondary_core.retro_set_environment(rarch_environment_cb);
 
-      //add_input_state_hook();  //TODO: move to runahead
 		secondary_core.retro_init();
 		
 		content_get_status(&contentless, &is_inited);
@@ -423,7 +424,6 @@ void secondary_core_destroy(void)
 		unlink_utf8(secondary_library_path);
 		free_str(&secondary_library_path);
 	}
-	//remove_input_state_hook();  //TODO: move to run_ahead
 }
 
 void remember_controller_port_device(long port, long device)
@@ -447,6 +447,23 @@ void clear_controller_port_map(void)
 	}
 }
 
+static void free_file(FILE **file_p)
+{
+   bool result;
+   if (file_p == NULL)
+   {
+      return;
+   }
+   if (*file_p == NULL)
+   {
+      return;
+   }
+   result = fclose(*file_p) != 0;
+   *file_p = NULL;
+   return;
+}
+
+
 #else
 #include "boolean.h"
 #include "core.h"
@@ -467,3 +484,4 @@ void remember_controller_port_device(long port, long device)
 	/* do nothing */
 }
 #endif
+

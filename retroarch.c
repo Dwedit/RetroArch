@@ -3256,10 +3256,6 @@ int runloop_iterate(unsigned *sleep_ms)
    }
    else
    {
-//#if HAVE_DYNAMIC
-//      extern bool InputIsDirty;
-//      InputIsDirty = true;
-//#endif
       core_run();
    }
 
