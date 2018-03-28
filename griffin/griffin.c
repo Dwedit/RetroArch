@@ -56,7 +56,9 @@ COMPATIBILITY
 
 #include "../libretro-common/compat/compat_fnmatch.c"
 #include "../libretro-common/compat/fopen_utf8.c"
+#if HAVE_DYNAMIC
 #include "../libretro-common/compat/unlink_utf8.c"
+#endif
 #include "../libretro-common/memmap/memalign.c"
 
 /*============================================================

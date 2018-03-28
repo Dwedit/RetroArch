@@ -45,6 +45,7 @@
 #include "audio/audio_driver.h"
 
 #include "runahead/copy_load_info.h"
+#include "runahead/secondary_core.h"
 
 struct                     retro_callbacks retro_ctx;
 struct                     retro_core_t current_core;
@@ -260,8 +261,6 @@ bool core_init_symbols(enum rarch_core_type *type)
    return true;
 }
 
-extern void remember_controller_port_device(long port, long device);
-
 bool core_set_controller_port_device(retro_ctx_controller_info_t *pad)
 {
    if (!pad)
@@ -281,8 +280,6 @@ bool core_get_memory(retro_ctx_memory_info_t *info)
    info->data  = current_core.retro_get_memory_data(info->id);
    return true;
 }
-
-extern void set_load_content_info(const retro_ctx_load_content_info_t *ctx);
 
 bool core_load_game(retro_ctx_load_content_info_t *load_info)
 {

@@ -66,6 +66,8 @@
 #include "msg_hash.h"
 #include "verbosity.h"
 
+#include "runahead/secondary_core.h"
+
 #ifdef HAVE_DYNAMIC
 #define SYMBOL(x) do { \
    function_t func = dylib_proc(lib_handle_local, #x); \
@@ -637,8 +639,6 @@ static bool load_symbols(enum rarch_core_type type, struct retro_core_t *current
 {
    return init_libretro_sym_custom(type, current_core, NULL, NULL);
 }
-
-extern void set_last_core_type(enum rarch_core_type type);
 
 /**
  * init_libretro_sym:
