@@ -209,7 +209,7 @@ void run_ahead(int runahead_count, bool useSecondary)
    const bool have_dynamic = false;
 #endif
 
-   if (runahead_count <= 0 || !runahead_available)
+   if (runahead_count < 0 || !runahead_available)
    {
       core_run();
       runahead_force_input_dirty = true;
