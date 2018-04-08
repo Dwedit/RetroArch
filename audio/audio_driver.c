@@ -702,6 +702,23 @@ static void audio_driver_flush(const int16_t *data, size_t samples)
       output_frames  *= sizeof(int16_t);
    }
 
+#if _DEBUG
+   const bool DUMP_AUDIO = true;
+   if (DUMP_AUDIO)
+   {
+      static FILE *dummyFile = NULL;
+      if (dummyFile == NULL)
+      {
+         dummyFile = fopen("C:\\retroarch\\audio_output.raw", "wb");
+      }
+      if (dummyFile != NULL)
+      {
+         fwrite(output_data, 1, output_frames * 2, dummyFile);
+         fflush(dummyFile);
+      }
+   }
+#endif
+
    if (current_audio->write(audio_driver_context_audio_data,
             output_data, output_frames * 2) < 0)
       audio_driver_active = false;
