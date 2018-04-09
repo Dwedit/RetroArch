@@ -209,6 +209,9 @@ static unsigned win32_monitor_count = 0;
 static void *curD3D                 = NULL;
 
 ui_window_win32_t main_window;
+HACCEL window_accelerators;
+
+#define IDR_ACCELERATOR 104
 
 /* Power Request APIs */
 
@@ -927,6 +930,8 @@ bool win32_window_create(void *data, unsigned style,
          NULL, NULL, NULL, data);
    if (!main_window.hwnd)
       return false;
+
+   window_accelerators = LoadAcceleratorsA(GetModuleHandleA(NULL), MAKEINTRESOURCE(IDR_ACCELERATOR));
 
 #if defined(_WIN32_WINNT) && _WIN32_WINNT >= 0x0500 /* 2K */
    g_taskbar_message = RegisterWindowMessage("TaskbarButtonCreated");

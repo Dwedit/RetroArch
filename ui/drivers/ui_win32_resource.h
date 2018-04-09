@@ -2,6 +2,7 @@
 
 #define IDR_MENU                                101
 #define IDD_PICKCORE                            103
+#define IDR_ACCELERATOR                         104
 #define ID_M_LOAD_CONTENT                       40001
 #define ID_CORELISTBOX                          40002
 #define ID_M_RESET                              40002

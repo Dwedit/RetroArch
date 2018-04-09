@@ -23,6 +23,8 @@
 
 #include "../../ui_companion_driver.h"
 
+extern HACCEL window_accelerators;
+
 static void* ui_application_win32_initialize(void)
 {
    return NULL;
@@ -42,8 +44,11 @@ static void ui_application_win32_process_events(void)
 
       if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
       {
-         TranslateMessage(&msg);
-         DispatchMessage (&msg);
+         if (!TranslateAccelerator(main_window.hwnd, window_accelerators, &msg))
+         {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+         }
       }
    }
 }

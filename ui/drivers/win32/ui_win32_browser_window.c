@@ -25,7 +25,6 @@
 #include <commctrl.h>
 
 #include "../../ui_companion_driver.h"
-#include "../../configuration.h"
 
 static bool ui_browser_window_win32_core(ui_browser_window_state_t *state, bool save)
 {
@@ -59,10 +58,11 @@ static bool ui_browser_window_win32_core(ui_browser_window_state_t *state, bool 
    ofn.FlagsEx           = 0;
 #endif
 
-   /* Full Screen: Show mouse for the file dialog */
+   /* Are we full screen? */
    if (settings->bools.video_fullscreen)
    {
       video_driver_show_mouse();
+      //SetForegroundWindow(main_window.hwnd);
    }
 
    okay = true;
@@ -71,7 +71,7 @@ static bool ui_browser_window_win32_core(ui_browser_window_state_t *state, bool 
    if (save && !GetSaveFileName(&ofn))
       okay = false;
 
-   /* Full screen: Hide mouse after the file dialog */
+   /* Are we full screen? */
    if (settings->bools.video_fullscreen)
    {
       video_driver_hide_mouse();
