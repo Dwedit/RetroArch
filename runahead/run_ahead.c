@@ -245,10 +245,25 @@ void run_ahead(int runahead_count, bool useSecondary)
             runahead_suspend_video();
          }
 
+         /* TESTING */
+         if (frame_number == 0)
+         {
+            runahead_resume_audio();
+            unset_hard_disable_audio();
+         }
+         else
+         {
+            runahead_suspend_audio();
+            set_hard_disable_audio();
+         }
+
          if (frame_number == 0)
             core_run();
          else
             core_run_no_input_polling();
+
+         /* TESTING */
+         unset_hard_disable_audio();
 
          if (suspended_frame)
          {
