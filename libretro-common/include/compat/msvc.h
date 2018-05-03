@@ -54,6 +54,11 @@ extern "C"  {
 #endif
 
 #undef UNICODE /* Do not bother with UNICODE at this time. */
+
+#ifndef _CRT_NONSTDC_NO_DEPRECATE
+#define _CRT_NONSTDC_NO_DEPRECATE
+#endif
+
 #include <direct.h>
 #include <stddef.h>
 #include <math.h>
