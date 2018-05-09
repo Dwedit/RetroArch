@@ -26,8 +26,11 @@
 
 #include "../../ui_companion_driver.h"
 
+extern void DoEvents();
+
 static bool ui_browser_window_win32_core(ui_browser_window_state_t *state, bool save)
 {
+   int exStyle = 0;
    bool okay = false;
    settings_t *settings = config_get_ptr();
    OPENFILENAME ofn;
@@ -62,7 +65,15 @@ static bool ui_browser_window_win32_core(ui_browser_window_state_t *state, bool 
    if (settings->bools.video_fullscreen)
    {
       video_driver_show_mouse();
-      //SetForegroundWindow(main_window.hwnd);
+
+      /* is window topmost? */
+      exStyle = GetWindowLong(main_window.hwnd, GWL_EXSTYLE);
+      if (exStyle & WS_EX_TOPMOST)
+      {
+         SetWindowPos(main_window.hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+      }
+      SetWindowPos(main_window.hwnd, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+      SetForegroundWindow(main_window.hwnd);
    }
 
    okay = true;
@@ -74,6 +85,12 @@ static bool ui_browser_window_win32_core(ui_browser_window_state_t *state, bool 
    /* Are we full screen? */
    if (settings->bools.video_fullscreen)
    {
+      if (exStyle & WS_EX_TOPMOST)
+      {
+         SetWindowPos(main_window.hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+      }
+      SetWindowPos(main_window.hwnd, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+      SetForegroundWindow(main_window.hwnd);
       video_driver_hide_mouse();
    }
 
