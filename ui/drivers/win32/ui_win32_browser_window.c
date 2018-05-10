@@ -25,8 +25,7 @@
 #include <commctrl.h>
 
 #include "../../ui_companion_driver.h"
-
-extern void DoEvents();
+#include "../../configuration.h"
 
 static bool ui_browser_window_win32_core(ui_browser_window_state_t *state, bool save)
 {
