@@ -22,7 +22,9 @@
 #include <windows.h>
 
 #include "../../ui_companion_driver.h"
+#include "../ui_win32.h"
 
+extern ui_window_win32_t main_window;
 extern HACCEL window_accelerators;
 
 static void* ui_application_win32_initialize(void)
