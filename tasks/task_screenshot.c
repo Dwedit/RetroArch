@@ -298,7 +298,6 @@ static bool take_screenshot_raw(const char *name_base, void *userbuf,
    size_t pitch;
    unsigned width, height;
    const void *data                      = NULL;
-   bool success = false;
 
    video_driver_cached_frame_get(&data, &width, &height, &pitch);
 
@@ -310,11 +309,9 @@ static bool take_screenshot_raw(const char *name_base, void *userbuf,
    /* Negative pitch is needed as screenshot takes bottom-up,
     * but we use top-down.
     */
-   success = screenshot_dump(name_base,
-      (const uint8_t*)data + (height - 1) * pitch,
-      width, height, (int)(-pitch), false, userbuf, savestate, is_idle, is_paused);
-
-   if (!success)
+   if (!screenshot_dump(name_base,
+         (const uint8_t*)data + (height - 1) * pitch,
+         width, height, (int)(-pitch), false, userbuf, savestate, is_idle, is_paused))
       return false;
 
    return true;
