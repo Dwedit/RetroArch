@@ -1303,15 +1303,16 @@ void win32_localize_menu(HMENU menu)
 #endif
    while (true)
    {
+      BOOL okay;
       memset(&menuItemInfo, 0, sizeof(menuItemInfo));
       menuItemInfo.cbSize = sizeof(menuItemInfo);
       menuItemInfo.dwTypeData = NULL;
       menuItemInfo.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID | MIIM_STATE | MIIM_SUBMENU;
 
 #ifndef LEGACY_WIN32
-      BOOL okay = GetMenuItemInfoW(menu, index, true, &menuItemInfo);
+      okay = GetMenuItemInfoW(menu, index, true, &menuItemInfo);
 #else
-      BOOL okay = GetMenuItemInfoA(menu, index, true, &menuItemInfo);
+      okay = GetMenuItemInfoA(menu, index, true, &menuItemInfo);
 #endif
       if (!okay) break;
 
@@ -1326,7 +1327,8 @@ void win32_localize_menu(HMENU menu)
          const char *newLabel = msg_hash_to_str(labelEnum);
          unsigned int metaKey = menu_id_to_meta_key(menuItemInfo.wID);
          const char *metaKeyName = meta_key_to_name(metaKey);
-         char *newLabel2 = newLabel;
+         const char *newLabel2 = newLabel;
+         char *newLabelText = NULL;
 #ifndef LEGACY_WIN32
          wchar_t *newLabel_unicode;
 #else
@@ -1339,11 +1341,12 @@ void win32_localize_menu(HMENU menu)
             int len1 = strlen(newLabel);
             int len2 = strlen(metaKeyName);
             int bufSize = len1 + len2 + 2;
-            newLabel2 = (char*)malloc(bufSize);
-            strcpy(newLabel2, newLabel);
-            strcat(newLabel2, "\t");
-            strcat(newLabel2, metaKeyName);
-            newLabel2[len1 + 1] = toupper(newLabel2[len1 + 1]);
+            newLabelText = (char*)malloc(bufSize);
+            newLabel2 = newLabelText;
+            strcpy(newLabelText, newLabel);
+            strcat(newLabelText, "\t");
+            strcat(newLabelText, metaKeyName);
+            newLabelText[len1 + 1] = toupper(newLabelText[len1 + 1]);
          }
 
 #ifndef LEGACY_WIN32
@@ -1361,9 +1364,9 @@ void win32_localize_menu(HMENU menu)
          SetMenuItemInfoA(menu, index, true, &menuItemInfo);
          free(newLabel_ansi);
 #endif
-         if (newLabel2 != newLabel)
+         if (newLabelText)
          {
-            free(newLabel2);
+            free(newLabelText);
          }
       }
       index++;
@@ -1392,13 +1395,14 @@ void win32_set_window(unsigned *width, unsigned *height,
 
       if (!fullscreen && settings->bools.ui_menubar_enable && !video_driver_is_threaded())
       {
+         HMENU menuItem;
          RECT rc_temp;
          rc_temp.left   = 0;
          rc_temp.top    = 0;
          rc_temp.right  = (LONG)*height;
          rc_temp.bottom = 0x7FFF;
 
-         HMENU menuItem = LoadMenuA(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_MENU));
+         menuItem = LoadMenuA(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_MENU));
          win32_localize_menu(menuItem);
 
          SetMenu(main_window.hwnd, menuItem);
