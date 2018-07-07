@@ -1304,6 +1304,7 @@ void win32_localize_menu(HMENU menu)
    while (true)
    {
       BOOL okay;
+      enum msg_hash_enums labelEnum;
       memset(&menuItemInfo, 0, sizeof(menuItemInfo));
       menuItemInfo.cbSize = sizeof(menuItemInfo);
       menuItemInfo.dwTypeData = NULL;
@@ -1321,7 +1322,7 @@ void win32_localize_menu(HMENU menu)
          win32_localize_menu(menuItemInfo.hSubMenu);
       }
 
-      enum msg_hash_enums labelEnum = menu_id_to_label_enum(menuItemInfo.wID);
+      labelEnum = menu_id_to_label_enum(menuItemInfo.wID);
       if (labelEnum != MSG_UNKNOWN)
       {
          const char *newLabel = msg_hash_to_str(labelEnum);
