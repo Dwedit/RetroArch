@@ -1222,7 +1222,6 @@ enum msg_hash_enums menu_id_to_label_enum(unsigned int menuId)
    case ID_M_STATE_INDEX_AUTO: return MSG_UNKNOWN;
    case ID_M_TAKE_SCREENSHOT: return MENU_ENUM_LABEL_VALUE_INPUT_META_SCREENSHOT;
    case ID_M_MUTE_TOGGLE: return MENU_ENUM_LABEL_VALUE_INPUT_META_MUTE;
-   case ID_M_SHADER_PARAMETERS: return MSG_UNKNOWN;
    default: return MSG_UNKNOWN;
    }
 }
@@ -1257,7 +1256,6 @@ unsigned int menu_id_to_meta_key(unsigned int menuId)
    case ID_M_STATE_INDEX_AUTO: return 0;
    case ID_M_TAKE_SCREENSHOT: return RARCH_SCREENSHOT;
    case ID_M_MUTE_TOGGLE: return RARCH_MUTE;
-   case ID_M_SHADER_PARAMETERS: return 0;
    default: return 0;
    }
 }
