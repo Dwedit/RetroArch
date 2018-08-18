@@ -168,4 +168,21 @@ int main(int argc, char *argv[])
 {
    return rarch_main(argc, argv, NULL);
 }
+
+int __stdcall WinMain(void* hInstance, void* hPrevInstance, const char *lpCmdLine, int nCmdShow)
+{
+   int argc;
+   const wchar_t *commandLineW = GetCommandLineW();
+   const wchar_t **argvW = CommandLineToArgvW(commandLineW, &argc);
+
+   char **argv = calloc(argc + 1, sizeof(char*));
+   argv[argc] = NULL;
+   for (int i = 0; i < argc; i++)
+   {
+      argv[i] = utf16_to_utf8_string_alloc(argvW[i]);
+   }
+
+   return rarch_main(argc, argv, NULL);
+}
+
 #endif
