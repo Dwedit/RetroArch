@@ -23,6 +23,7 @@
 #include "../content.h"
 
 #include "secondary_core.h"
+#include "dirty_input.h"
 
 static int port_map[16];
 
@@ -57,6 +58,8 @@ void set_last_core_type(enum rarch_core_type type);
 void remember_controller_port_device(long port, long device);
 
 void clear_controller_port_map(void);
+
+void *secondary_core_get_sram_ptr(void);
 
 char* get_temp_directory_alloc(void)
 {
@@ -257,6 +260,7 @@ bool secondary_core_create(void)
       }
 
       core_set_default_callbacks(&secondary_callbacks);
+      secondary_callbacks.state_cb = input_state_get_last;
       secondary_core.retro_set_video_refresh(secondary_callbacks.frame_cb);
       secondary_core.retro_set_audio_sample(secondary_callbacks.sample_cb);
       secondary_core.retro_set_audio_sample_batch(secondary_callbacks.sample_batch_cb);
@@ -323,6 +327,15 @@ bool secondary_core_deserialize(const void *buffer, int size)
    return false;
 }
 
+bool secondary_core_serialize(void *buffer, int size)
+{
+   if (secondary_core_ensure_exists())
+   {
+      return secondary_core.retro_serialize(buffer, size);
+   }
+   return false;
+}
+
 bool secondary_core_ensure_exists(void)
 {
    if (!secondary_module)
@@ -368,6 +381,11 @@ void clear_controller_port_map(void)
    unsigned port;
    for (port = 0; port < 16; port++)
       port_map[port] = -1;
+}
+
+void *secondary_core_get_sram_ptr(void)
+{
+   return secondary_core.retro_get_memory_data(RETRO_MEMORY_SAVE_RAM);
 }
 
 #else

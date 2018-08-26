@@ -9,6 +9,7 @@
 #include "mem_util.h"
 #include "dirty_input.h"
 
+bool force_use_last_input = false;
 bool input_is_dirty             = false;
 static MyList *input_state_list = NULL;
 
@@ -80,7 +81,7 @@ static void input_state_set_last(unsigned port, unsigned device,
       element->state[id] = value;
 }
 
-static int16_t input_state_get_last(unsigned port,
+int16_t input_state_get_last(unsigned port,
       unsigned device, unsigned index, unsigned id)
 {
    unsigned i;
@@ -108,13 +109,20 @@ static int16_t input_state_get_last(unsigned port,
 static int16_t input_state_with_logging(unsigned port,
       unsigned device, unsigned index, unsigned id)
 {
+   if (force_use_last_input)
+   {
+      return input_state_get_last(port, device, index, id);
+   }
+
    if (input_state_callback_original)
    {
       int16_t result     = input_state_callback_original(
             port, device, index, id);
       int16_t last_input = input_state_get_last(port, device, index, id);
       if (result != last_input)
+      {
          input_is_dirty = true;
+      }
       input_state_set_last(port, device, index, id, result);
       return result;
    }

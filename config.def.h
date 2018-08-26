@@ -625,6 +625,9 @@ static const bool run_ahead_secondary_instance = true;
 /* Hide warning messages when using the Run Ahead feature. */
 static const bool run_ahead_hide_warnings = false;
 
+/* Enable Debug Mode for RunAhead, which tries to find inconsistencies after loading state */
+static const bool run_ahead_debug_mode = false;
+
 /* Enable stdin/network command interface. */
 static const bool network_cmd_enable = false;
 static const uint16_t network_cmd_port = 55355;
