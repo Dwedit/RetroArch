@@ -12,7 +12,6 @@ void remove_input_state_hook(void);
 int16_t input_state_get_last(unsigned port,
    unsigned device, unsigned index, unsigned id);
 
-
 RETRO_END_DECLS
 
 #endif

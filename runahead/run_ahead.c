@@ -181,7 +181,7 @@ static void runahead_clear_variables(void)
    runahead_after_first_frame = false;
 }
 
-uint64_t runahead_get_frame_count()
+static uint64_t runahead_get_frame_count()
 {
    bool is_alive, is_focused = false;
    uint64_t frame_count = 0;
@@ -236,34 +236,113 @@ void run_ahead(int runahead_count, bool useSecondary)
    runahead_check_for_gui();
 
    static bool DEBUGDEBUG = false;
+   static bool TRACING1 = false;
+   static bool TRACING2 = false;
+   static int FRAMECOUNT = 0;
 
    if (settings->bools.run_ahead_debug_mode)
    {
-      //if (runahead_get_frame_count() >= 675 - 3)
+      ////Test for Snes9x
+      //if (!TRACING1)
+      //{
+      //   TRACING1 = true;
+      //   typedef void(*str_function_t)(const char *);
+      //   str_function_t set_log_dir = (str_function_t)GetProcAddress(lib_handle, "set_log_dir");
+      //   set_log_dir("C:\\retroarch\\LOGS\\");
+      //   function_t toggle_trace = (function_t)GetProcAddress(lib_handle, "toggle_trace");
+      //   toggle_trace();
+      //}
+
+      //if (!TRACING2)
+      //{
+      //   secondary_core_ensure_exists();
+      //   TRACING2 = true;
+      //   typedef void(*str_function_t)(const char *);
+      //   str_function_t set_log_dir = (str_function_t)GetProcAddress(secondary_module, "set_log_dir");
+      //   set_log_dir("C:\\retroarch\\LOGS\\LOGS2\\");
+      //   function_t toggle_trace = (function_t)GetProcAddress(secondary_module, "toggle_trace");
+      //   toggle_trace();
+      //}
+
+      if (FRAMECOUNT < 1)
+      {
+         FRAMECOUNT++;
+         core_run();
+         runahead_save_state();
+         runahead_load_state_secondary();
+      }
+
+      //core_run();
+      //runahead_run_secondary();
+
+      //if (TRACING1)
+      //{
+      //   typedef void(*str_function_t)(const char *);
+      //   str_function_t debug_print = (str_function_t)GetProcAddress(lib_handle, "debug_print");
+      //   debug_print("Frame End");
+      //}
+
+      //if (TRACING2)
+      //{
+      //   typedef void(*str_function_t)(const char *);
+      //   str_function_t debug_print = (str_function_t)GetProcAddress(secondary_module, "debug_print");
+      //   debug_print("Frame End");
+      //}
+
+      //return;
+
+      //Test for Snes9x
+      //{
+      //   typedef void(*str_function_t)(const char *);
+      //   str_function_t set_log_dir = (str_function_t)GetProcAddress(lib_handle, "set_log_dir");
+      //   set_log_dir("C:\\retroarch\\LOGS\\");
+      //   function_t toggle_trace = (function_t)GetProcAddress(lib_handle, "toggle_trace");
+
+      //   core_run();
+      //   runahead_save_state();
+      //   toggle_trace();
+      //   core_run();
+      //   toggle_trace();
+
+      //   remove_hooks();
+      //   current_core.retro_unload_game();
+      //   current_core.retro_load_game(load_content_info->info);
+      //   add_hooks();
+
+      //   set_log_dir("C:\\retroarch\\LOGS\\LOGS2\\");
+      //   toggle_trace();
+      //   runahead_load_state();
+      //   core_run();
+      //   toggle_trace();
+
+      //}
+
+
+      //if (runahead_get_frame_count() >= 59 - 1)
       //{
       //   DEBUGDEBUG = true;
       //}
-      if (DEBUGDEBUG)
-      {
-         typedef void(*str_function_t)(const char *);
-         str_function_t set_log_dir = (str_function_t)GetProcAddress(lib_handle, "set_log_dir");
-         set_log_dir("C:\\retroarch\\LOGS\\");
+      //if (DEBUGDEBUG)
+      //{
+      //   typedef void(*str_function_t)(const char *);
+      //   str_function_t set_log_dir = (str_function_t)GetProcAddress(lib_handle, "set_log_dir");
+      //   set_log_dir("C:\\retroarch\\LOGS\\");
 
-         if (useSecondary)
-         {
-            str_function_t set_log_dir2 = NULL;
-            set_log_dir2 = (str_function_t)GetProcAddress(secondary_module, "set_log_dir");
-            set_log_dir2("C:\\retroarch\\LOGS\\LOGS2\\");
-         }
-      }
+      //   if (useSecondary)
+      //   {
+      //      str_function_t set_log_dir2 = NULL;
+      //      set_log_dir2 = (str_function_t)GetProcAddress(secondary_module, "set_log_dir");
+      //      set_log_dir2("C:\\retroarch\\LOGS\\LOGS2\\");
+      //   }
+      //}
 
       if (!useSecondary)
       {
-         if (DEBUGDEBUG)
-         {
-            function_t toggle_trace = (function_t)GetProcAddress(lib_handle, "toggle_trace");
-            toggle_trace();
-         }
+         //if (DEBUGDEBUG)
+         //{
+         //   function_t toggle_trace = (function_t)GetProcAddress(lib_handle, "toggle_trace");
+         //   toggle_trace();
+         //}
 
          if (runahead_count > 0)
          {
@@ -277,11 +356,11 @@ void run_ahead(int runahead_count, bool useSecondary)
             runahead_resume_video();
          }
 
-         if (DEBUGDEBUG)
-         {
-            function_t toggle_trace = (function_t)GetProcAddress(lib_handle, "toggle_trace");
-            toggle_trace();
-         }
+         //if (DEBUGDEBUG)
+         //{
+         //   function_t toggle_trace = (function_t)GetProcAddress(lib_handle, "toggle_trace");
+         //   toggle_trace();
+         //}
 
          runahead_save_state();
          if (runahead_count > 0)
@@ -294,6 +373,17 @@ void run_ahead(int runahead_count, bool useSecondary)
       else
       {
          secondary_core_ensure_exists();
+
+         //if (!TRACING2)
+         //{
+         //   TRACING2 = true;
+         //   typedef void(*str_function_t)(const char *);
+         //   str_function_t set_log_dir = (str_function_t)GetProcAddress(secondary_module, "set_log_dir");
+         //   set_log_dir("C:\\retroarch\\LOGS\\LOGS2\\");
+         //   function_t toggle_trace = (function_t)GetProcAddress(secondary_module, "toggle_trace");
+         //   toggle_trace();
+         //}
+
          if (!runahead_after_first_frame)
          {
             runahead_after_first_frame = true;
@@ -311,11 +401,11 @@ void run_ahead(int runahead_count, bool useSecondary)
 
          }
 
-         if (DEBUGDEBUG)
-         {
-            function_t toggle_trace = (function_t)GetProcAddress(lib_handle, "toggle_trace");
-            toggle_trace();
-         }
+         //if (DEBUGDEBUG)
+         //{
+         //   function_t toggle_trace = (function_t)GetProcAddress(lib_handle, "toggle_trace");
+         //   toggle_trace();
+         //}
 
          if (runahead_count > 0)
          {
@@ -329,35 +419,56 @@ void run_ahead(int runahead_count, bool useSecondary)
             runahead_resume_video();
          }
 
-         if (DEBUGDEBUG)
-         {
-            function_t toggle_trace = (function_t)GetProcAddress(lib_handle, "toggle_trace");
-            toggle_trace();
-         }
-
+         //if (DEBUGDEBUG)
+         //{
+         //   function_t toggle_trace = (function_t)GetProcAddress(lib_handle, "toggle_trace");
+         //   toggle_trace();
+         //}
          runahead_save_state();
+         //if (TRACING1)
+         //{
+         //   typedef void(*str_function_t)(const char *);
+         //   str_function_t debug_print = (str_function_t)GetProcAddress(lib_handle, "debug_print");
+         //   debug_print("Frame End");
+         //}
+
          if (runahead_count > 0)
          {
             core_run_use_last_input();
+            runahead_load_state();
          }
-         runahead_load_state();
+         //if (TRACING1)
+         //{
+         //   typedef void(*str_function_t)(const char *);
+         //   str_function_t debug_print = (str_function_t)GetProcAddress(lib_handle, "debug_print");
+         //   debug_print("Load State");
+         //}
 
-         if (DEBUGDEBUG)
-         {
-            function_t toggle_trace2 = (function_t)GetProcAddress(secondary_module, "toggle_trace");
-            toggle_trace2();
-         }
+         //if (DEBUGDEBUG)
+         //{
+         //   function_t toggle_trace2 = (function_t)GetProcAddress(secondary_module, "toggle_trace");
+         //   toggle_trace2();
+         //}
+         //runahead_load_state_secondary();
          runahead_suspend_audio();
          runahead_suspend_video();
          runahead_run_secondary();
+         runahead_save_state_secondary();
          runahead_resume_audio();
          runahead_resume_video();
-         if (DEBUGDEBUG)
-         {
-            function_t toggle_trace2 = (function_t)GetProcAddress(secondary_module, "toggle_trace");
-            toggle_trace2();
-         }
-         runahead_save_state_secondary();
+         //if (DEBUGDEBUG)
+         //{
+         //   function_t toggle_trace2 = (function_t)GetProcAddress(secondary_module, "toggle_trace");
+         //   toggle_trace2();
+         //}
+         //if (TRACING2)
+         //{
+         //   typedef void(*str_function_t)(const char *);
+         //   str_function_t debug_print = (str_function_t)GetProcAddress(secondary_module, "debug_print");
+         //   debug_print("Frame End");
+         //}
+
+
       }
 
       retro_ctx_serialize_info_t *mem1 = runahead_save_state_list->data[0];
@@ -468,10 +579,26 @@ void run_ahead(int runahead_count, bool useSecondary)
          return;
       }
 
+      //if (runahead_last_frame_count == 94)
+      //{
+      //   if (!TRACING1)
+      //   {
+      //      TRACING1 = true;
+      //      typedef void(*str_function_t)(const char *);
+      //      str_function_t set_log_dir = (str_function_t)GetProcAddress(lib_handle, "set_log_dir");
+      //      set_log_dir("C:\\retroarch\\LOGS\\");
+      //      function_t toggle_trace = (function_t)GetProcAddress(lib_handle, "toggle_trace");
+      //      toggle_trace();
+      //   }
+      //}
+
       /* run main core with video suspended */
       runahead_suspend_video();
       core_run();
       runahead_resume_video();
+
+      //debug: force dirty input
+      input_is_dirty = true;
 
       if (input_is_dirty || runahead_force_input_dirty)
       {
@@ -502,6 +629,18 @@ void run_ahead(int runahead_count, bool useSecondary)
       }
       runahead_suspend_audio();
       set_hard_disable_audio();
+      //if (runahead_last_frame_count == 94)
+      //{
+      //   if (!TRACING2)
+      //   {
+      //      TRACING2 = true;
+      //      typedef void(*str_function_t)(const char *);
+      //      str_function_t set_log_dir = (str_function_t)GetProcAddress(secondary_module, "set_log_dir");
+      //      set_log_dir("C:\\retroarch\\LOGS\\LOGS2\\");
+      //      function_t toggle_trace2 = (function_t)GetProcAddress(secondary_module, "toggle_trace");
+      //      toggle_trace2();
+      //   }
+      //}
       runahead_run_secondary();
       unset_hard_disable_audio();
       runahead_resume_audio();
@@ -647,7 +786,7 @@ static bool runahead_load_state_secondary(void)
 
 static bool runahead_run_secondary(void)
 {
-   if (!secondary_core_run_no_input_polling())
+   if (!secondary_core_run_use_last_input())
    {
       runahead_secondary_core_available = false;
       return false;
@@ -719,14 +858,31 @@ static void unset_hard_disable_audio(void)
    hard_disable_audio = false;
 }
 
+static void runahead_input_poll_null(void)
+{
+}
 
-
-
-extern bool force_use_last_input;
 static bool core_run_use_last_input(void)
 {
-   force_use_last_input = true;
+   extern struct retro_callbacks retro_ctx;
+   extern struct retro_core_t current_core;
+
+   retro_input_poll_t old_poll_function = retro_ctx.poll_cb;
+   retro_input_state_t old_input_function = retro_ctx.state_cb;
+
+   retro_ctx.poll_cb = runahead_input_poll_null;
+   retro_ctx.state_cb = input_state_get_last;
+
+   current_core.retro_set_input_poll(retro_ctx.poll_cb);
+   current_core.retro_set_input_state(retro_ctx.state_cb);
+
    current_core.retro_run();
-   force_use_last_input = false;
+
+   retro_ctx.poll_cb = old_poll_function;
+   retro_ctx.state_cb = old_input_function;
+
+   current_core.retro_set_input_poll(retro_ctx.poll_cb);
+   current_core.retro_set_input_state(retro_ctx.state_cb);
+
    return true;
 }
