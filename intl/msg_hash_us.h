@@ -4901,6 +4901,7 @@ MSG_HASH(
     MENU_ENUM_SUBLABEL_RUN_AHEAD_HIDE_WARNINGS,
     "Hides the warning message that appears when using RunAhead and the core does not support savestates."
     )
+MSG_HASH(
     MENU_ENUM_SUBLABEL_RUN_AHEAD_DEBUG_MODE,
     "Enable Debug Mode for RunAhead, which tries to find inconsistencies after loading state."
     )

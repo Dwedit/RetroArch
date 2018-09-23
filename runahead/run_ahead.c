@@ -18,6 +18,8 @@
 
 static bool runahead_create(void);
 static bool runahead_save_state(void);
+static bool runahead_save_state_2(void);
+static bool runahead_save_state_secondary(void);
 static bool runahead_load_state(void);
 static bool runahead_load_state_secondary(void);
 static bool runahead_run_secondary(void);
@@ -35,8 +37,21 @@ static bool core_run_use_last_input(void);
 static size_t runahead_save_state_size = 0;
 static bool runahead_save_state_size_known = false;
 
+static bool runahead_have_copied_sram = false;
+
 /* Save State List for Run Ahead */
 static MyList *runahead_save_state_list;
+
+#ifdef WIN32
+#ifdef _MSC_VER
+#define BREAKPOINT() if (IsDebuggerPresent()) { __debugbreak(); }
+#else
+#define BREAKPOINT() if (IsDebuggerPresent()) { DebugBreak(); }
+#endif
+#else
+#define BREAKPOINT()
+#endif
+
 
 static void *runahead_save_state_alloc(void)
 {
@@ -174,6 +189,7 @@ static void runahead_clear_variables(void)
    runahead_secondary_core_available = true;
    runahead_force_input_dirty        = true;
    runahead_last_frame_count         = 0;
+   runahead_have_copied_sram = false;
 }
 
 static uint64_t runahead_get_frame_count()
@@ -206,8 +222,8 @@ void run_ahead(int runahead_count, bool useSecondary)
 #else
    const bool have_dynamic = false;
 #endif
-
-   if (runahead_count <= 0 || !runahead_available)
+   settings_t *settings = config_get_ptr();
+   if (runahead_count < 0 || !runahead_available)
    {
       core_run();
       runahead_force_input_dirty = true;
@@ -218,7 +234,6 @@ void run_ahead(int runahead_count, bool useSecondary)
    {
       if (!runahead_create())
       {
-         settings_t *settings = config_get_ptr();
          if (!settings->bools.run_ahead_hide_warnings)
          {
             runloop_msg_queue_push(msg_hash_to_str(MSG_RUNAHEAD_CORE_DOES_NOT_SUPPORT_SAVESTATES), 0, 2 * 60, true);
@@ -231,6 +246,72 @@ void run_ahead(int runahead_count, bool useSecondary)
 
    runahead_check_for_gui();
 
+   if (settings->bools.run_ahead_debug_mode)
+   {
+      if (!useSecondary)
+      {
+         if (runahead_count > 0) { runahead_suspend_audio(); runahead_suspend_video(); }
+         core_run();
+         if (runahead_count > 0) { runahead_resume_audio(); runahead_resume_video(); }
+         runahead_save_state();
+         if (runahead_count > 0) { core_run_use_last_input(); }
+         runahead_load_state();
+         runahead_save_state_2();
+      }
+      else
+      {
+         secondary_core_ensure_exists();
+         if (!runahead_have_copied_sram)
+         {
+            runahead_have_copied_sram = true;
+            void *sram2 = secondary_core_get_sram_ptr();
+            retro_ctx_memory_info_t mem_ctx;
+            mem_ctx.id = RETRO_MEMORY_SAVE_RAM;
+            mem_ctx.data = NULL;
+            mem_ctx.size = 0;
+            core_get_memory(&mem_ctx);
+
+            if (sram2 != NULL && mem_ctx.data != NULL)
+            {
+               memcpy(sram2, mem_ctx.data, mem_ctx.size);
+            }
+         }
+
+         if (runahead_count > 0) { runahead_suspend_audio(); runahead_suspend_video(); }
+         core_run();
+         if (runahead_count > 0) { runahead_resume_audio(); runahead_resume_video(); }
+
+         runahead_save_state();
+         if (runahead_count > 0)
+         {
+            core_run_use_last_input();
+         }
+         runahead_load_state();
+
+         runahead_suspend_audio();
+         runahead_suspend_video();
+         runahead_run_secondary();
+         runahead_resume_audio();
+         runahead_resume_video();
+         runahead_save_state_secondary();
+      }
+
+      retro_ctx_serialize_info_t *mem1 = runahead_save_state_list->data[0];
+      retro_ctx_serialize_info_t *mem2 = runahead_save_state_list->data[1];
+      if (0 != memcmp(mem1->data, mem2->data, runahead_save_state_size))
+      {
+         //BREAKPOINT();
+         for (int offset = 0; offset < runahead_save_state_size; offset++)
+         {
+            if (((char*)mem1->data)[offset] != ((char*)(mem2->data))[offset])
+            {
+               int dummy = 0;
+            }
+         }
+         int dummy2 = 0;
+      }
+      return;
+   }
    if (!useSecondary || !have_dynamic || !runahead_secondary_core_available)
    {
       /* TODO: multiple savestates for higher performance 
@@ -358,18 +439,39 @@ static bool runahead_create(void)
 
    add_hooks();
    runahead_force_input_dirty = true;
-   mylist_resize(runahead_save_state_list, 1, true);
+   //mylist_resize(runahead_save_state_list, 1, true);
+   mylist_resize(runahead_save_state_list, 2, true);
+   runahead_have_copied_sram = false;
    return true;
 }
 
 static bool runahead_save_state(void)
 {
-   bool okay                                  = false;
+   bool okay = false;
    retro_ctx_serialize_info_t *serialize_info;
    if (!runahead_save_state_list)
       return false;
    serialize_info =
       (retro_ctx_serialize_info_t*)runahead_save_state_list->data[0];
+   set_fast_savestate();
+   okay = core_serialize(serialize_info);
+   unset_fast_savestate();
+   if (!okay)
+   {
+      runahead_error();
+      return false;
+   }
+   return true;
+}
+
+static bool runahead_save_state_2(void)
+{
+   bool okay = false;
+   retro_ctx_serialize_info_t *serialize_info;
+   if (!runahead_save_state_list)
+      return false;
+   serialize_info =
+      (retro_ctx_serialize_info_t*)runahead_save_state_list->data[1];
    set_fast_savestate();
    okay = core_serialize(serialize_info);
    unset_fast_savestate();
@@ -402,6 +504,26 @@ static bool runahead_load_state(void)
 
    return okay;
 }
+
+static bool runahead_save_state_secondary(void)
+{
+   bool okay = false;
+   retro_ctx_serialize_info_t *serialize_info;
+   if (!runahead_save_state_list)
+      return false;
+   serialize_info =
+      (retro_ctx_serialize_info_t*)runahead_save_state_list->data[1];
+   set_fast_savestate();
+   okay = secondary_core_serialize(serialize_info->data, serialize_info->size);
+   unset_fast_savestate();
+   if (!okay)
+   {
+      runahead_error();
+      return false;
+   }
+   return true;
+}
+
 
 static bool runahead_load_state_secondary(void)
 {

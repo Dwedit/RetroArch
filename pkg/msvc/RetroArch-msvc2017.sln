@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RetroArch-msvc2017", "msvc-2017\RetroArch-msvc2017.vcxproj", "{27FF7CE1-4059-4AA1-8062-FD529560FA54}"
 EndProject
 Global
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Cg|x64 = Debug Cg|x64
 		Debug Cg|x86 = Debug Cg|x86
@@ -60,5 +63,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A29A16BA-30D7-484C-B0C4-633D9EF6EBAD}
 	EndGlobalSection
 EndGlobal
