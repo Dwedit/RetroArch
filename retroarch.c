@@ -3487,7 +3487,7 @@ int runloop_iterate(unsigned *sleep_ms)
 
 #ifdef HAVE_RUNAHEAD
    /* Run Ahead Feature replaces the call to core_run in this loop */
-   if (settings->bools.run_ahead_enabled && settings->uints.run_ahead_frames > 0
+   if (settings->bools.run_ahead_enabled && settings->uints.run_ahead_frames >= 0
 #ifdef HAVE_NETWORKING
       && !netplay_driver_ctl(RARCH_NETPLAY_CTL_IS_ENABLED, NULL)
 #endif

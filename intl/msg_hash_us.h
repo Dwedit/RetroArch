@@ -2469,6 +2469,8 @@ MSG_HASH(
     MENU_ENUM_LABEL_VALUE_RUN_AHEAD_HIDE_WARNINGS,
     "RunAhead Hide Warnings"
     )
+MSG_HASH(MENU_ENUM_LABEL_VALUE_RUN_AHEAD_DEBUG_MODE,
+    "RunAhead Debug Mode")
 MSG_HASH(
     MENU_ENUM_LABEL_VALUE_SORT_SAVEFILES_ENABLE,
     "Sort Saves In Folders"
@@ -4898,6 +4900,9 @@ MSG_HASH(
 MSG_HASH(
     MENU_ENUM_SUBLABEL_RUN_AHEAD_HIDE_WARNINGS,
     "Hides the warning message that appears when using RunAhead and the core does not support savestates."
+    )
+    MENU_ENUM_SUBLABEL_RUN_AHEAD_DEBUG_MODE,
+    "Enable Debug Mode for RunAhead, which tries to find inconsistencies after loading state."
     )
 MSG_HASH(
     MENU_ENUM_SUBLABEL_REWIND_ENABLE,

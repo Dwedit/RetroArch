@@ -48,6 +48,8 @@ void remember_controller_port_device(long port, long device);
 
 void clear_controller_port_map(void);
 
+void *secondary_core_get_sram_ptr(void);
+
 static char *get_temp_directory_alloc(void)
 {
    char *path       = NULL;
@@ -359,6 +361,15 @@ bool secondary_core_deserialize(const void *buffer, int size)
    return false;
 }
 
+bool secondary_core_serialize(void *buffer, int size)
+{
+   if (secondary_core_ensure_exists())
+   {
+      return secondary_core.retro_serialize(buffer, size);
+   }
+   return false;
+}
+
 bool secondary_core_ensure_exists(void)
 {
    if (!secondary_module)
@@ -406,6 +417,11 @@ void clear_controller_port_map(void)
    unsigned port;
    for (port = 0; port < 16; port++)
       port_map[port] = -1;
+}
+
+void *secondary_core_get_sram_ptr(void)
+{
+   return secondary_core.retro_get_memory_data(RETRO_MEMORY_SAVE_RAM);
 }
 
 #else
