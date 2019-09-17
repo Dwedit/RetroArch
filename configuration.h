@@ -242,6 +242,7 @@ typedef struct settings
       bool run_ahead_enabled;
       bool run_ahead_secondary_instance;
       bool run_ahead_hide_warnings;
+      bool run_ahead_debug_mode;
       bool pause_nonactive;
       bool block_sram_overwrite;
       bool savestate_auto_index;

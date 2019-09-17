@@ -4875,6 +4875,22 @@ static bool setting_append_list(
 
          CONFIG_BOOL(
                list, list_info,
+               &settings->bools.run_ahead_debug_mode,
+               MENU_ENUM_LABEL_RUN_AHEAD_DEBUG_MODE,
+               MENU_ENUM_LABEL_VALUE_RUN_AHEAD_DEBUG_MODE,
+               false,
+               MENU_ENUM_LABEL_VALUE_OFF,
+               MENU_ENUM_LABEL_VALUE_ON,
+               &group_info,
+               &subgroup_info,
+               parent_group,
+               general_write_handler,
+               general_read_handler,
+               SD_FLAG_ADVANCED
+               );
+
+         CONFIG_BOOL(
+               list, list_info,
                &settings->bools.menu_throttle_framerate,
                MENU_ENUM_LABEL_MENU_THROTTLE_FRAMERATE,
                MENU_ENUM_LABEL_VALUE_MENU_ENUM_THROTTLE_FRAMERATE,

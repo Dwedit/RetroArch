@@ -1477,6 +1477,8 @@ MSG_HASH(MENU_ENUM_LABEL_VALUE_RUN_AHEAD_SECONDARY_INSTANCE,
       "RunAhead Use Second Instance")
 MSG_HASH(MENU_ENUM_LABEL_VALUE_RUN_AHEAD_HIDE_WARNINGS,
       "RunAhead Hide Warnings")
+MSG_HASH(MENU_ENUM_LABEL_VALUE_RUN_AHEAD_DEBUG_MODE,
+    "RunAhead Debug Mode")
 MSG_HASH(MENU_ENUM_LABEL_VALUE_SORT_SAVEFILES_ENABLE,
       "Sort Saves In Folders")
 MSG_HASH(MENU_ENUM_LABEL_VALUE_SORT_SAVESTATES_ENABLE,
@@ -2793,6 +2795,10 @@ MSG_HASH(
 MSG_HASH(
       MENU_ENUM_SUBLABEL_RUN_AHEAD_HIDE_WARNINGS,
       "Hides the warning message that appears when using RunAhead and the core does not support savestates."
+      )
+MSG_HASH(
+      MENU_ENUM_SUBLABEL_RUN_AHEAD_DEBUG_MODE,
+      "Use RunAhead to verify savestates.  For developers only."
       )
 MSG_HASH(
       MENU_ENUM_SUBLABEL_REWIND_ENABLE,
