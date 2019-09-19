@@ -79,7 +79,7 @@
    if (current_core->x == NULL) { RARCH_ERR("Failed to load symbol: \"%s\"\n", #x); retroarch_fail(1, "init_libretro_sym()"); } \
 } while (0)
 
-static dylib_t lib_handle;
+/*static*/ dylib_t lib_handle;
 #else
 #define SYMBOL(x) current_core->x = x
 #endif

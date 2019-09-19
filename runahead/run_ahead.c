@@ -68,6 +68,8 @@ static void RASurface_destructor(void*);
 static bool RASurface_equals(RASurface *surfaceA, RASurface *surfaceB);
 static void RASurface_assign(RASurface *destSurface, RASurface *srcSurface);
 
+static int core_serialize_compare(const void* data1, const void* data2, size_t size);
+
 /*
 typedef struct tagRAMem
 {
@@ -1276,6 +1278,14 @@ static bool debug_runahead_compare_state(int slot1, int slot2)
    /* compare them */
    if (0 != memcmp(state1->data, state2->data, state1->size))
    {
+      //for (int i = 0; i < state1->size; i++)
+      //{
+      //   if (((uint8_t*)state1->data)[i] != ((uint8_t*)state2->data)[i])
+      //   {
+      //      int dummy = 0;
+      //   }
+      //}
+      core_serialize_compare(state1->data, state2->data, state1->size);
       isEqual = false;
    }
    return isEqual;
@@ -1331,3 +1341,20 @@ static void debug_runahead_copy_sram_if_needed(void)
 }
 
 //   mylist_destroy(&debug_runahead_save_state_list);
+
+#include <dynamic/dylib.h>
+
+typedef int(*retro_serialize_compare_func)(const void* data1, const void* data2, size_t size);
+
+static int core_serialize_compare(const void* data1, const void* data2, size_t size)
+{
+   extern dylib_t lib_handle;
+   function_t func = dylib_proc(lib_handle, "retro_serialize_compare");
+   if (func != NULL)
+   {
+      frontend_driver_attach_console();
+      retro_serialize_compare_func func2 = (retro_serialize_compare_func)func;
+      func2(data1, data2, size);
+   }
+   return 0;
+}
